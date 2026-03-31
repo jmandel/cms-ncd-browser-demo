@@ -1,0 +1,12 @@
+{
+  "name": "cms-ncd-browser-demo",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Standalone Bun dashboard demo for exploring CMS NCD and LCD coverage logic through a hand-curated OSA metamodel.",
+  "scripts": {
+    "build": "bun build src/viewer.ts --outdir public/build --target=browser",
+    "start": "bun run server.ts",
+    "check": "bun run build"
+  }
+}
