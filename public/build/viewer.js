@@ -564,27 +564,37 @@ function renderNcdTutorial(model) {
   `;
 }
 function renderFamilyRail(model) {
+  const selectedFamily = currentFamily(model);
   return `
     <section class="panel">
       <div class="section-head">
         <div>
           <div class="eyebrow">Downstream Branches</div>
           <h2>Choose A Therapy Lens</h2>
-          <p class="section-copy">After the NCD baseline, each downstream treatment path changes the logic differently. Select a treatment path and the next sections will show how local policy reuses, narrows, operationalizes, or replaces the national layer.</p>
+          <p class="section-copy">After the national NCD baseline is established, each treatment path changes the logic differently. Select a treatment path and the next sections will show how local policy reuses, narrows, operationalizes, or replaces that baseline.</p>
         </div>
+      </div>
+
+      <div class="family-select-row">
+        <label class="family-select-label" for="family-select">Treatment path in focus</label>
+        <select class="family-select" id="family-select" aria-label="Select treatment path in focus">
+          ${model.policyFamilies.map((family) => `
+                <option value="${family.id}" ${family.id === state.selectedFamilyId ? "selected" : ""}>
+                  ${escapeHtml(family.label)}
+                </option>
+              `).join("")}
+        </select>
+        <span class="family-select-note">${escapeHtml(selectedFamily.label)} is highlighted in the comparisons below.</span>
       </div>
 
       <div class="family-rail">
         ${model.policyFamilies.map((family) => {
     const selected = family.id === state.selectedFamilyId;
     return `
-              <button class="family-card ${toneClass(family.tone)} ${selected ? "is-active" : ""}" data-family="${family.id}" aria-pressed="${selected ? "true" : "false"}" title="${selected ? "Current focus" : `Focus ${family.label}`}">
+              <button class="family-card ${toneClass(family.tone)} ${selected ? "is-active" : ""}" data-family="${family.id}" aria-pressed="${selected ? "true" : "false"}" title="View ${escapeHtml(family.label)}">
                 <div class="family-stage">${escapeHtml(family.stage)}</div>
                 <div class="family-title">${escapeHtml(family.label)}</div>
                 <p class="family-summary">${escapeHtml(family.summary)}</p>
-                <div class="family-footer">
-                  <span class="family-hint ${selected ? "is-active" : ""}">${selected ? "Current focus" : "Click to focus"}</span>
-                </div>
               </button>
             `;
   }).join("")}
@@ -755,8 +765,8 @@ function renderRuleSemantics(model) {
 
       <div class="section-head secondary">
         <div>
-          <h3>How Each Treatment Branch Changes The National Baseline</h3>
-          <p class="section-copy">Here, a treatment path means one downstream therapy lane such as PAP, oral appliance, surgery, or HGNS. Each card summarizes whether that path mostly reuses the national rule, narrows it, operationalizes it, or adds genuinely new local logic.</p>
+          <h3>How Each Treatment Path Changes The National Baseline</h3>
+          <p class="section-copy">Here, a treatment path means one therapy option considered after the national baseline, such as PAP, oral appliance, surgery, or HGNS. Each card summarizes whether that path mostly reuses the national rule, narrows it, operationalizes it, or adds genuinely new local logic.</p>
         </div>
       </div>
 
@@ -773,9 +783,6 @@ function renderRuleSemantics(model) {
                     <div class="eyebrow">${escapeHtml(family?.stage ?? "Branch")}</div>
                     <h3>${escapeHtml(family?.label ?? summary.familyId)}</h3>
                   </div>
-                  <button class="layer-family-chip ${active ? "is-active" : ""}" data-family="${summary.familyId}">
-                    ${active ? "Current focus" : "Focus"}
-                  </button>
                 </div>
                 <p>${escapeHtml(summary.takeaway)}</p>
                 <div class="delta-counts">
@@ -1505,7 +1512,7 @@ function renderCodeAtlas(model) {
           <div class="catalog-family-tag">${escapeHtml(current ? families.get(current.familyId)?.label ?? current.familyId : families.get(state.selectedFamilyId)?.label ?? state.selectedFamilyId)}</div>
         </div>
 
-        <p class="section-copy">${escapeHtml(current?.summary ?? "Sleep testing and other baseline-only branches do not carry their own claim tables. Their structured coding burden appears in the downstream therapy families that inherit the diagnostic floor.")}</p>
+        <p class="section-copy">${escapeHtml(current?.summary ?? "Sleep testing and other baseline-only paths do not carry their own claim tables. Their structured coding burden appears in later treatment paths that inherit the diagnostic floor.")}</p>
 
         ${current ? `
               <div class="catalog-group-stack">
@@ -1674,7 +1681,7 @@ function render(model) {
       ${renderCodeAtlas(model)}
       ${renderMacVariation(model)}
 
-      ${renderChapterIntro(5, "Automation Layer", "What AI Agents Can Structure Today", "Finally, the tutorial exposes the canonical requirement dictionary and the source ledger. These are the data products that make policy comparison, visualization, and downstream decision support straightforward.")}
+      ${renderChapterIntro(5, "Automation Layer", "What AI Agents Can Structure Today", "Finally, the tutorial exposes the canonical requirement dictionary and the source ledger. These are the data products that make policy comparison, visualization, and later decision-support use straightforward.")}
       ${renderRequirementDictionary(model)}
       ${renderSourceLedger(model)}
 
@@ -1692,6 +1699,15 @@ function render(model) {
       state.selectedFamilyId = familyId;
       render(state.model);
     });
+  });
+  const familySelect = document.querySelector("#family-select");
+  familySelect?.addEventListener("change", () => {
+    const familyId = familySelect.value;
+    if (!familyId || !state.model || familyId === state.selectedFamilyId) {
+      return;
+    }
+    state.selectedFamilyId = familyId;
+    render(state.model);
   });
 }
 async function bootstrap() {
