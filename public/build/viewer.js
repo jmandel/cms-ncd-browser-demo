@@ -303,51 +303,34 @@ function renderTutorialOrientation() {
   `;
 }
 function renderCmsGlossary() {
-  const glossaryRows = [
-    {
-      term: "NCD",
-      title: "National coverage floor",
-      body: "A National Coverage Determination is the Medicare-wide baseline. For OSA, the NCDs define the covered sleep-test pathways and the first-line CPAP framework."
-    },
-    {
-      term: "LCD",
-      title: "Local contractor coverage rule",
-      body: "A Local Coverage Determination is written by a Medicare Administrative Contractor, or MAC. LCDs can reuse the NCD, narrow it, operationalize it, or create a therapy-specific branch."
-    },
-    {
-      term: "Article",
-      title: "Claim execution layer",
-      body: "Companion billing articles translate clinical coverage into ICD-10, HCPCS/CPT, modifiers, and documentation instructions. This is often where claim logic becomes most computable."
-    },
-    {
-      term: "MAC",
-      title: "Regional Medicare contractor",
-      body: "MACs administer Medicare claims in defined jurisdictions. In OSA, MAC-specific HGNS LCDs look similar clinically but still differ in rollout history and coding details."
-    },
-    {
-      term: "Response record",
-      title: "Revision and governance context",
-      body: "Response-to-comments documents explain why a policy changed, which objections were answered, and whether a branch is current, retired, or consolidated into another LCD."
-    }
-  ];
   const stackLayers = [
     {
-      term: "Article",
-      role: "Claim execution layer",
-      detail: "Turns coverage into diagnosis, procedure, modifier, and documentation instructions.",
-      tone: "article"
+      term: "NCD",
+      role: "National coverage floor",
+      detail: "A National Coverage Determination is the Medicare-wide baseline. For OSA, the NCDs define the covered sleep-test pathways and the first-line CPAP framework.",
+      band: "Foundation",
+      tone: "ncd"
     },
     {
       term: "LCD",
-      role: "Local therapy or workflow rules",
-      detail: "Adds contractor-specific requirements, exclusions, and operational steps.",
+      role: "Local contractor coverage rule",
+      detail: "A Local Coverage Determination is written by a Medicare Administrative Contractor, or MAC. LCDs can reuse the NCD, narrow it, operationalize it, or create a therapy-specific branch.",
+      band: "Local overlay",
       tone: "lcd"
     },
     {
-      term: "NCD",
-      role: "National baseline",
-      detail: "Sets the Medicare-wide starting point for what counts as covered evidence or therapy.",
-      tone: "ncd"
+      term: "Article",
+      role: "Claim execution layer",
+      detail: "Companion billing articles translate clinical coverage into ICD-10, HCPCS/CPT, modifiers, and documentation instructions. This is often where claim logic becomes most computable.",
+      band: "Execution layer",
+      tone: "article"
+    },
+    {
+      term: "Response record",
+      role: "Revision and governance context",
+      detail: "Response-to-comments documents explain why a policy changed, which objections were answered, and whether a branch is current, retired, or consolidated into another LCD.",
+      band: "Change history",
+      tone: "response"
     }
   ];
   return `
@@ -356,43 +339,28 @@ function renderCmsGlossary() {
         <div>
           <div class="eyebrow">CMS Vocabulary</div>
           <h2>The Policy Stack In Plain Language</h2>
-          <p class="section-copy">If you know the medicine but not CMS policy mechanics, this is the translation layer. The useful mental model is a layered stack of records, not a pile of unrelated documents.</p>
+          <p class="section-copy">If you know the medicine but not CMS policy mechanics, this is the translation layer. Read these records as one layered stack: national baseline first, then local policy, then billing execution, with response records explaining how the wording changed over time.</p>
         </div>
       </div>
 
-      <div class="record-stack-layout">
-        <div class="record-stack-panel">
-          <div class="record-stack-caption">Think of policy as layered records</div>
-          <div class="record-stack-visual">
-            ${stackLayers.map((layer) => `
-                  <div class="stack-layer stack-layer-${layer.tone}">
-                    <div class="stack-layer-top">
-                      <span class="tutorial-term">${escapeHtml(layer.term)}</span>
-                      <span class="stack-layer-role">${escapeHtml(layer.role)}</span>
-                    </div>
-                    <div class="stack-layer-detail">${escapeHtml(layer.detail)}</div>
+      <div class="record-stack-panel">
+        <div class="record-stack-caption">One stack, from baseline to execution</div>
+        <div class="record-stack-visual">
+          ${stackLayers.map((layer) => `
+                <article class="stack-layer stack-layer-${layer.tone}">
+                  <div class="stack-layer-top">
+                    <span class="tutorial-term">${escapeHtml(layer.term)}</span>
+                    <span class="stack-layer-role">${escapeHtml(layer.band)}</span>
                   </div>
-                `).join("")}
-          </div>
-
-          <div class="stack-sidecar">
-            <span class="tutorial-term">Response record</span>
-            <div class="stack-sidecar-body">Explains why wording changed, how comments were handled, and whether an older local policy was retired or consolidated.</div>
-          </div>
+                  <h3>${escapeHtml(layer.role)}</h3>
+                  <div class="stack-layer-detail">${escapeHtml(layer.detail)}</div>
+                </article>
+              `).join("")}
         </div>
 
-        <div class="glossary-list">
-          ${glossaryRows.map((entry) => `
-              <article class="glossary-row">
-                <div class="glossary-row-term">
-                  <span class="tutorial-term">${escapeHtml(entry.term)}</span>
-                </div>
-                <div class="glossary-row-body">
-                  <h3>${escapeHtml(entry.title)}</h3>
-                  <p>${escapeHtml(entry.body)}</p>
-                </div>
-              </article>
-            `).join("")}
+        <div class="stack-sidecar">
+          <span class="tutorial-term">MAC</span>
+          <div class="stack-sidecar-body">Medicare Administrative Contractor. This is the regional payer entity that writes LCDs and associated billing articles for its jurisdictions.</div>
         </div>
       </div>
     </section>
@@ -481,6 +449,7 @@ function renderSourceLandscape(model) {
                   <span class="tutorial-label">${escapeHtml(record.type)}</span>
                 </div>
                 <h3>${escapeHtml(record.title)}</h3>
+                <div class="example-snippet-label">Paraphrased rule from this document</div>
                 <div class="example-snippet">${escapeHtml(record.snippet)}</div>
                 <div class="example-meaning-label">What this means</div>
                 <p>${escapeHtml(record.meaning)}</p>
@@ -490,8 +459,8 @@ function renderSourceLandscape(model) {
 
       <div class="section-head secondary">
         <div>
-          <h3>How Much Of Each Record Type Is In Scope</h3>
-          <p class="section-copy">After the concrete examples, these counts show how many records of each kind are included in the curated OSA tutorial.</p>
+          <h3>How Many Records Of Each Type Are In Scope</h3>
+          <p class="section-copy">After the concrete examples, these counts simply show how many records of each kind are included in the curated OSA tutorial.</p>
         </div>
       </div>
 
@@ -724,6 +693,42 @@ function renderRuleSemantics(model) {
           <div class="eyebrow">How The Tutorial Thinks</div>
           <h2>Coverage Semantics</h2>
           <p class="section-copy">This abstraction layer is the bridge from unstructured CMS narrative to computable comparison. It lets the tutorial ask whether a local policy is truly new logic, a stricter version of the NCD, a local workflow translation, or just a billing-layer implementation detail.</p>
+        </div>
+      </div>
+
+      <div class="worked-example">
+        <div class="section-head secondary">
+          <div>
+            <h3>Worked Example: CPAP Continuation</h3>
+            <p class="section-copy">This is what the abstraction is doing. Start with one concrete policy relationship: the national CPAP rule creates a trial period, and the local PAP LCD turns that broad concept into measurable continuation rules.</p>
+          </div>
+        </div>
+
+        <div class="tutorial-grid tutorial-grid-2">
+          <article class="tutorial-card">
+            <div class="eyebrow">In The Source Documents</div>
+            <div class="typed-list">
+              <div class="typed-list-item">
+                <strong>NCD 240.4</strong>
+                <div>Initial coverage is limited to a 12-week trial period.</div>
+              </div>
+              <div class="typed-list-item">
+                <strong>LCD L33718</strong>
+                <div>Continued PAP coverage depends on a 90-day continuation window, objective adherence of at least 4 hours per night on 70% of nights, and follow-up between days 31 and 91.</div>
+              </div>
+            </div>
+          </article>
+
+          <article class="tutorial-card">
+            <div class="eyebrow">In The Structured Model</div>
+            <div class="delta-counts">
+              ${noteChip("Requirement: CPAP trial window", "neutral")}
+              ${relationChip("National baseline", "baseline")}
+              ${relationChip("Operationalizes", "operationalizes")}
+              ${noteChip("Requirement: objective adherence threshold", "neutral")}
+            </div>
+            <p class="section-copy">Instead of reading two documents and inferring the connection, the model records the relationship explicitly: the NCD defines the baseline concept, and the LCD operationalizes it into auditable workflow thresholds.</p>
+          </article>
         </div>
       </div>
 

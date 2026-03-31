@@ -404,12 +404,6 @@ a:hover {
   text-transform: uppercase;
 }
 
-.record-stack-layout {
-  display: grid;
-  gap: 16px;
-  grid-template-columns: minmax(320px, 0.9fr) minmax(0, 1.2fr);
-}
-
 .record-stack-panel {
   display: grid;
   gap: 14px;
@@ -418,6 +412,7 @@ a:hover {
 
 .record-stack-caption,
 .example-meaning-label,
+.example-snippet-label,
 .stack-layer-role {
   color: var(--muted);
   font-size: 0.76rem;
@@ -434,7 +429,6 @@ a:hover {
 
 .stack-layer,
 .stack-sidecar,
-.glossary-row,
 .example-card {
   border: 1px solid var(--line);
   border-radius: var(--radius);
@@ -452,9 +446,12 @@ a:hover {
   gap: 12px;
 }
 
+.stack-layer h3 {
+  margin: 10px 0 0;
+}
+
 .stack-layer-detail,
 .stack-sidecar-body,
-.glossary-row p,
 .example-snippet {
   margin-top: 10px;
   line-height: 1.58;
@@ -462,35 +459,30 @@ a:hover {
 
 .stack-layer-ncd {
   box-shadow: inset 0 3px 0 rgba(108, 75, 193, 0.28);
+  width: 100%;
 }
 
 .stack-layer-lcd {
   box-shadow: inset 0 3px 0 rgba(22, 102, 213, 0.28);
+  width: 94%;
+  margin-left: 3%;
 }
 
 .stack-layer-article {
   box-shadow: inset 0 3px 0 rgba(15, 123, 120, 0.28);
+  width: 88%;
+  margin-left: 6%;
+}
+
+.stack-layer-response {
+  border-style: dashed;
+  width: 82%;
+  margin-left: 9%;
 }
 
 .stack-sidecar {
   padding: 14px 16px;
   background: rgba(16, 32, 51, 0.04);
-}
-
-.glossary-list {
-  display: grid;
-  gap: 10px;
-}
-
-.glossary-row {
-  display: grid;
-  grid-template-columns: 110px minmax(0, 1fr);
-  gap: 14px;
-  padding: 14px 16px;
-}
-
-.glossary-row-body h3 {
-  margin: 0 0 8px;
 }
 
 .example-card h3 {
@@ -500,12 +492,21 @@ a:hover {
 .example-snippet {
   padding: 12px;
   border-radius: 12px;
-  background: rgba(22, 102, 213, 0.05);
+  border: 1px solid rgba(22, 102, 213, 0.12);
+  background: rgba(22, 102, 213, 0.04);
   font-weight: 700;
+}
+
+.example-snippet-label {
+  margin-top: 10px;
 }
 
 .example-meaning-label {
   margin-top: 12px;
+}
+
+.worked-example {
+  margin-bottom: 20px;
 }
 
 .delta-card.is-active,
@@ -1821,7 +1822,6 @@ a:hover {
   .tutorial-grid-2,
   .tutorial-grid-3,
   .tutorial-grid-4,
-  .record-stack-layout,
   .focus-grid,
   .focus-meta-grid,
   .focus-metric-grid,
@@ -1851,8 +1851,12 @@ a:hover {
     flex-direction: column;
   }
 
-  .glossary-row {
-    grid-template-columns: 1fr;
+  .stack-layer-ncd,
+  .stack-layer-lcd,
+  .stack-layer-article,
+  .stack-layer-response {
+    width: 100%;
+    margin-left: 0;
   }
 
   .tutorial-label {
