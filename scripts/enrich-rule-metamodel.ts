@@ -77,6 +77,12 @@ const relationLegend = [
     meaning: "The rule appears in billing/article logic rather than in the main coverage criteria text.",
     tone: "ink",
   },
+  {
+    id: "governs",
+    label: "Governance layer",
+    meaning: "The record governs lifecycle, revision rationale, topology, or response-to-comments context rather than a bedside criterion alone.",
+    tone: "ink",
+  },
 ];
 
 const requirementGroups = [
@@ -106,9 +112,19 @@ const requirementGroups = [
     description: "What hardware, procedure lanes, and exclusions the policy recognizes.",
   },
   {
+    id: "exclusions",
+    label: "Exclusions And Contraindications",
+    description: "Explicit denial logic, contraindication bundles, and non-covered states that sit alongside the affirmative criteria.",
+  },
+  {
     id: "coding",
     label: "Coding And Adjudication",
     description: "What articles, code ranges, modifiers, and billing constraints operationalize the decision.",
+  },
+  {
+    id: "governance",
+    label: "Governance And Document Topology",
+    description: "How the policy is structured, revised, cross-linked, retired, and defended through response-to-comment records.",
   },
 ];
 
@@ -363,6 +379,18 @@ const requirementCatalog = [
     },
   ),
   entry(
+    "ordering-refill-replacement-rules",
+    "workflow",
+    "Ordering, refill, and replacement rules",
+    "structured-text",
+    "Supplier-side ordering, refill, replacement, and proof-of-delivery requirements that operationalize continued device coverage.",
+    ["Standard written order", "Refill request", "Proof of delivery", "Replacement justification"],
+    {
+      shortLabel: "Supply operations",
+      usedByFamilies: ["pap-therapy"],
+    },
+  ),
+  entry(
     "anatomic-assessment",
     "provider-site",
     "Anatomic assessment",
@@ -411,6 +439,18 @@ const requirementCatalog = [
     },
   ),
   entry(
+    "facility-appropriateness",
+    "provider-site",
+    "Facility appropriateness",
+    "structured-text",
+    "Requirement that the service be furnished in a setting appropriate to the beneficiary’s medical risk and procedural needs.",
+    ["Facility credentialing", "Place of service", "Operative setting documentation"],
+    {
+      shortLabel: "Facility setting",
+      usedByFamilies: ["surgery", "hgns"],
+    },
+  ),
+  entry(
     "dise-validation",
     "provider-site",
     "DISE validation requirement",
@@ -433,6 +473,18 @@ const requirementCatalog = [
       shortLabel: "Device lane",
       relatedVariableIds: ["claim-code-bundle"],
       usedByFamilies: ["pap-therapy", "oral-appliance", "hgns"],
+    },
+  ),
+  entry(
+    "custom-fabrication-requirement",
+    "device-procedure",
+    "Custom fabrication requirement",
+    "boolean",
+    "Whether the covered device must be custom fabricated rather than prefabricated or generic.",
+    ["Dental device order", "Laboratory fabrication record", "HCPCS device code"],
+    {
+      shortLabel: "Custom-only",
+      usedByFamilies: ["oral-appliance"],
     },
   ),
   entry(
@@ -459,6 +511,42 @@ const requirementCatalog = [
       shortLabel: "Procedure lane",
       relatedVariableIds: ["claim-code-bundle"],
       usedByFamilies: ["surgery", "hgns"],
+    },
+  ),
+  entry(
+    "contraindication-bundle",
+    "exclusions",
+    "Contraindication bundle",
+    "enum-set",
+    "Named clinical states that independently make the therapy not reasonable and necessary even if inclusion criteria are met.",
+    ["Problem list", "Specialist evaluation", "Contraindication assessment"],
+    {
+      shortLabel: "Contraindications",
+      usedByFamilies: ["hgns"],
+    },
+  ),
+  entry(
+    "non-fda-approval-exclusion",
+    "exclusions",
+    "Non-FDA-approved device exclusion",
+    "boolean",
+    "Whether coverage is restricted to FDA-approved devices and explicitly denies non-approved device use.",
+    ["Device model", "Implant system documentation"],
+    {
+      shortLabel: "FDA-only lane",
+      usedByFamilies: ["hgns"],
+    },
+  ),
+  entry(
+    "device-compatibility-exclusion",
+    "exclusions",
+    "Device compatibility exclusion",
+    "structured-text",
+    "Compatibility exclusions tied to MRI rules or to other implanted devices that could interfere with therapy.",
+    ["Implant inventory", "MRI need assessment", "Manufacturer compatibility guidance"],
+    {
+      shortLabel: "Compatibility exclusion",
+      usedByFamilies: ["hgns"],
     },
   ),
   entry(
@@ -550,6 +638,66 @@ const requirementCatalog = [
       usedByFamilies: ["hgns"],
     },
   ),
+  entry(
+    "policy-status-lifecycle",
+    "governance",
+    "Policy status and lifecycle",
+    "enum",
+    "Whether the record is current, retired, consolidated, or otherwise part of the policy lifecycle rather than the live coverage rule alone.",
+    ["Status field", "Revision history", "Retirement notice"],
+    {
+      shortLabel: "Lifecycle",
+      usedByFamilies: ["hgns"],
+    },
+  ),
+  entry(
+    "response-to-comments-rationale",
+    "governance",
+    "Response-to-comments rationale",
+    "structured-text",
+    "How the contractor records stakeholder feedback, implementation rationale, and reasons for final policy wording.",
+    ["Response-to-comments article", "Comment disposition record"],
+    {
+      shortLabel: "Comment response",
+      usedByFamilies: ["hgns"],
+    },
+  ),
+  entry(
+    "document-structure-variation",
+    "governance",
+    "Document structure variation",
+    "structured-text",
+    "Differences in section availability, narrative shape, or page architecture that can matter for extraction and comparison.",
+    ["LCD section layout", "Associated info section", "History section"],
+    {
+      shortLabel: "Structure variation",
+      usedByFamilies: ["hgns"],
+    },
+  ),
+  entry(
+    "evidence-summary-style",
+    "governance",
+    "Evidence summary style",
+    "structured-text",
+    "How the LCD frames its evidence discussion, citations, or summary of supporting literature.",
+    ["Summary of evidence section", "Bibliography", "Citation style"],
+    {
+      shortLabel: "Evidence style",
+      usedByFamilies: ["hgns"],
+    },
+  ),
+  entry(
+    "related-document-topology",
+    "governance",
+    "Related-document topology",
+    "structured-text",
+    "How many related LCDs, articles, and companion records the policy links to, and what those links imply for navigation and operational use.",
+    ["Related documents section", "Associated documents"],
+    {
+      shortLabel: "Related-doc topology",
+      usedByFamilies: ["hgns"],
+    },
+  ),
 ];
 
 const requirementIdSet = new Set(requirementCatalog.map((item) => item.id));
@@ -630,10 +778,29 @@ const hgnsCoreStatements = [
     structuredValue: { min: 15, max: 65, unit: "events/hour", metric: "AHI" },
     note: "This is not the same severity branch used in the PAP NCD; HGNS creates its own implant-selection window.",
   }),
+  statement("contraindication-bundle", "adds", "denies", "Coverage is denied when the HGNS contraindication bundle is present.", {
+    significance: "high",
+    note: "The bundle spans cardiopulmonary disease, neurologic impairment, pregnancy, incompatible implanted devices, psychiatric/functional limits, and other exclusions.",
+  }),
+  statement("non-fda-approval-exclusion", "adds", "denies", "Non-FDA-approved HGNS devices are not reasonable and necessary.", {
+    significance: "high",
+  }),
+  statement("device-compatibility-exclusion", "adds", "denies", "MRI incompatibility and interfering implanted devices can independently deny coverage.", {
+    significance: "medium",
+  }),
   statement("anatomic-assessment", "adds", "requires", "DISE must show no complete concentric collapse and no other anatomic compromise", {
     significance: "high",
   }),
+  statement("sleep-lab-accreditation", "adds", "requires", "Sleep studies and downstream sleep evaluation are tied to accredited sleep-facility standards through local sleep-policy references.", {
+    significance: "medium",
+  }),
+  statement("facility-appropriateness", "adds", "requires", "Implantation must occur in facilities appropriate to the beneficiary's procedural risk and medical needs.", {
+    significance: "medium",
+  }),
   statement("provider-role", "adds", "requires", "Sleep physician plus implanting otolaryngologist participate in selection and treatment pathway", {
+    significance: "medium",
+  }),
+  statement("device-lane", "adds", "requires", "FDA-approved HGNS device lane only, currently represented by the Inspire platform family.", {
     significance: "medium",
   }),
   statement("primary-diagnosis-code", "codes", "codes", "Primary diagnosis anchored to G47.33 in billing articles", {

@@ -3904,6 +3904,12 @@
         "label": "Coding layer",
         "meaning": "The rule appears in billing/article logic rather than in the main coverage criteria text.",
         "tone": "ink"
+      },
+      {
+        "id": "governs",
+        "label": "Governance layer",
+        "meaning": "The record governs lifecycle, revision rationale, topology, or response-to-comments context rather than a bedside criterion alone.",
+        "tone": "ink"
       }
     ],
     "requirementGroups": [
@@ -3933,9 +3939,19 @@
         "description": "What hardware, procedure lanes, and exclusions the policy recognizes."
       },
       {
+        "id": "exclusions",
+        "label": "Exclusions And Contraindications",
+        "description": "Explicit denial logic, contraindication bundles, and non-covered states that sit alongside the affirmative criteria."
+      },
+      {
         "id": "coding",
         "label": "Coding And Adjudication",
         "description": "What articles, code ranges, modifiers, and billing constraints operationalize the decision."
+      },
+      {
+        "id": "governance",
+        "label": "Governance And Document Topology",
+        "description": "How the policy is structured, revised, cross-linked, retired, and defended through response-to-comment records."
       }
     ],
     "requirementCatalog": [
@@ -4275,6 +4291,25 @@
         ]
       },
       {
+        "id": "ordering-refill-replacement-rules",
+        "groupId": "workflow",
+        "label": "Ordering, refill, and replacement rules",
+        "shortLabel": "Supply operations",
+        "valueType": "structured-text",
+        "definition": "Supplier-side ordering, refill, replacement, and proof-of-delivery requirements that operationalize continued device coverage.",
+        "canonicalQuestion": "What does the policy require for ordering, refill, and replacement rules?",
+        "typicalEvidence": [
+          "Standard written order",
+          "Refill request",
+          "Proof of delivery",
+          "Replacement justification"
+        ],
+        "relatedVariableIds": [],
+        "usedByFamilies": [
+          "pap-therapy"
+        ]
+      },
+      {
         "id": "anatomic-assessment",
         "groupId": "provider-site",
         "label": "Anatomic assessment",
@@ -4349,6 +4384,25 @@
         ]
       },
       {
+        "id": "facility-appropriateness",
+        "groupId": "provider-site",
+        "label": "Facility appropriateness",
+        "shortLabel": "Facility setting",
+        "valueType": "structured-text",
+        "definition": "Requirement that the service be furnished in a setting appropriate to the beneficiary’s medical risk and procedural needs.",
+        "canonicalQuestion": "What does the policy require for facility appropriateness?",
+        "typicalEvidence": [
+          "Facility credentialing",
+          "Place of service",
+          "Operative setting documentation"
+        ],
+        "relatedVariableIds": [],
+        "usedByFamilies": [
+          "surgery",
+          "hgns"
+        ]
+      },
+      {
         "id": "dise-validation",
         "groupId": "provider-site",
         "label": "DISE validation requirement",
@@ -4385,6 +4439,24 @@
           "pap-therapy",
           "oral-appliance",
           "hgns"
+        ]
+      },
+      {
+        "id": "custom-fabrication-requirement",
+        "groupId": "device-procedure",
+        "label": "Custom fabrication requirement",
+        "shortLabel": "Custom-only",
+        "valueType": "boolean",
+        "definition": "Whether the covered device must be custom fabricated rather than prefabricated or generic.",
+        "canonicalQuestion": "What does the policy require for custom fabrication requirement?",
+        "typicalEvidence": [
+          "Dental device order",
+          "Laboratory fabrication record",
+          "HCPCS device code"
+        ],
+        "relatedVariableIds": [],
+        "usedByFamilies": [
+          "oral-appliance"
         ]
       },
       {
@@ -4426,6 +4498,59 @@
         ],
         "usedByFamilies": [
           "surgery",
+          "hgns"
+        ]
+      },
+      {
+        "id": "contraindication-bundle",
+        "groupId": "exclusions",
+        "label": "Contraindication bundle",
+        "shortLabel": "Contraindications",
+        "valueType": "enum-set",
+        "definition": "Named clinical states that independently make the therapy not reasonable and necessary even if inclusion criteria are met.",
+        "canonicalQuestion": "What does the policy require for contraindication bundle?",
+        "typicalEvidence": [
+          "Problem list",
+          "Specialist evaluation",
+          "Contraindication assessment"
+        ],
+        "relatedVariableIds": [],
+        "usedByFamilies": [
+          "hgns"
+        ]
+      },
+      {
+        "id": "non-fda-approval-exclusion",
+        "groupId": "exclusions",
+        "label": "Non-FDA-approved device exclusion",
+        "shortLabel": "FDA-only lane",
+        "valueType": "boolean",
+        "definition": "Whether coverage is restricted to FDA-approved devices and explicitly denies non-approved device use.",
+        "canonicalQuestion": "What does the policy require for non-fda-approved device exclusion?",
+        "typicalEvidence": [
+          "Device model",
+          "Implant system documentation"
+        ],
+        "relatedVariableIds": [],
+        "usedByFamilies": [
+          "hgns"
+        ]
+      },
+      {
+        "id": "device-compatibility-exclusion",
+        "groupId": "exclusions",
+        "label": "Device compatibility exclusion",
+        "shortLabel": "Compatibility exclusion",
+        "valueType": "structured-text",
+        "definition": "Compatibility exclusions tied to MRI rules or to other implanted devices that could interfere with therapy.",
+        "canonicalQuestion": "What does the policy require for device compatibility exclusion?",
+        "typicalEvidence": [
+          "Implant inventory",
+          "MRI need assessment",
+          "Manufacturer compatibility guidance"
+        ],
+        "relatedVariableIds": [],
+        "usedByFamilies": [
           "hgns"
         ]
       },
@@ -4552,6 +4677,94 @@
         "typicalEvidence": [
           "Related document section",
           "Cross-referenced LCD/article"
+        ],
+        "relatedVariableIds": [],
+        "usedByFamilies": [
+          "hgns"
+        ]
+      },
+      {
+        "id": "policy-status-lifecycle",
+        "groupId": "governance",
+        "label": "Policy status and lifecycle",
+        "shortLabel": "Lifecycle",
+        "valueType": "enum",
+        "definition": "Whether the record is current, retired, consolidated, or otherwise part of the policy lifecycle rather than the live coverage rule alone.",
+        "canonicalQuestion": "What does the policy require for policy status and lifecycle?",
+        "typicalEvidence": [
+          "Status field",
+          "Revision history",
+          "Retirement notice"
+        ],
+        "relatedVariableIds": [],
+        "usedByFamilies": [
+          "hgns"
+        ]
+      },
+      {
+        "id": "response-to-comments-rationale",
+        "groupId": "governance",
+        "label": "Response-to-comments rationale",
+        "shortLabel": "Comment response",
+        "valueType": "structured-text",
+        "definition": "How the contractor records stakeholder feedback, implementation rationale, and reasons for final policy wording.",
+        "canonicalQuestion": "What does the policy require for response-to-comments rationale?",
+        "typicalEvidence": [
+          "Response-to-comments article",
+          "Comment disposition record"
+        ],
+        "relatedVariableIds": [],
+        "usedByFamilies": [
+          "hgns"
+        ]
+      },
+      {
+        "id": "document-structure-variation",
+        "groupId": "governance",
+        "label": "Document structure variation",
+        "shortLabel": "Structure variation",
+        "valueType": "structured-text",
+        "definition": "Differences in section availability, narrative shape, or page architecture that can matter for extraction and comparison.",
+        "canonicalQuestion": "What does the policy require for document structure variation?",
+        "typicalEvidence": [
+          "LCD section layout",
+          "Associated info section",
+          "History section"
+        ],
+        "relatedVariableIds": [],
+        "usedByFamilies": [
+          "hgns"
+        ]
+      },
+      {
+        "id": "evidence-summary-style",
+        "groupId": "governance",
+        "label": "Evidence summary style",
+        "shortLabel": "Evidence style",
+        "valueType": "structured-text",
+        "definition": "How the LCD frames its evidence discussion, citations, or summary of supporting literature.",
+        "canonicalQuestion": "What does the policy require for evidence summary style?",
+        "typicalEvidence": [
+          "Summary of evidence section",
+          "Bibliography",
+          "Citation style"
+        ],
+        "relatedVariableIds": [],
+        "usedByFamilies": [
+          "hgns"
+        ]
+      },
+      {
+        "id": "related-document-topology",
+        "groupId": "governance",
+        "label": "Related-document topology",
+        "shortLabel": "Related-doc topology",
+        "valueType": "structured-text",
+        "definition": "How many related LCDs, articles, and companion records the policy links to, and what those links imply for navigation and operational use.",
+        "canonicalQuestion": "What does the policy require for related-document topology?",
+        "typicalEvidence": [
+          "Related documents section",
+          "Associated documents"
         ],
         "relatedVariableIds": [],
         "usedByFamilies": [
@@ -4985,6 +5198,28 @@
             }
           },
           {
+            "requirementId": "contraindication-bundle",
+            "relation": "adds",
+            "polarity": "denies",
+            "valueSummary": "Coverage is denied when the HGNS contraindication bundle is present.",
+            "significance": "high",
+            "note": "The bundle spans cardiopulmonary disease, neurologic impairment, pregnancy, incompatible implanted devices, psychiatric/functional limits, and other exclusions."
+          },
+          {
+            "requirementId": "non-fda-approval-exclusion",
+            "relation": "adds",
+            "polarity": "denies",
+            "valueSummary": "Non-FDA-approved HGNS devices are not reasonable and necessary.",
+            "significance": "high"
+          },
+          {
+            "requirementId": "device-compatibility-exclusion",
+            "relation": "adds",
+            "polarity": "denies",
+            "valueSummary": "MRI incompatibility and interfering implanted devices can independently deny coverage.",
+            "significance": "medium"
+          },
+          {
             "requirementId": "anatomic-assessment",
             "relation": "adds",
             "polarity": "requires",
@@ -4992,10 +5227,31 @@
             "significance": "high"
           },
           {
+            "requirementId": "sleep-lab-accreditation",
+            "relation": "adds",
+            "polarity": "requires",
+            "valueSummary": "Sleep studies and downstream sleep evaluation are tied to accredited sleep-facility standards through local sleep-policy references.",
+            "significance": "medium"
+          },
+          {
+            "requirementId": "facility-appropriateness",
+            "relation": "adds",
+            "polarity": "requires",
+            "valueSummary": "Implantation must occur in facilities appropriate to the beneficiary's procedural risk and medical needs.",
+            "significance": "medium"
+          },
+          {
             "requirementId": "provider-role",
             "relation": "adds",
             "polarity": "requires",
             "valueSummary": "Sleep physician plus implanting otolaryngologist participate in selection and treatment pathway",
+            "significance": "medium"
+          },
+          {
+            "requirementId": "device-lane",
+            "relation": "adds",
+            "polarity": "requires",
+            "valueSummary": "FDA-approved HGNS device lane only, currently represented by the Inspire platform family.",
             "significance": "medium"
           },
           {
@@ -5115,6 +5371,28 @@
             }
           },
           {
+            "requirementId": "contraindication-bundle",
+            "relation": "adds",
+            "polarity": "denies",
+            "valueSummary": "Coverage is denied when the HGNS contraindication bundle is present.",
+            "significance": "high",
+            "note": "The bundle spans cardiopulmonary disease, neurologic impairment, pregnancy, incompatible implanted devices, psychiatric/functional limits, and other exclusions."
+          },
+          {
+            "requirementId": "non-fda-approval-exclusion",
+            "relation": "adds",
+            "polarity": "denies",
+            "valueSummary": "Non-FDA-approved HGNS devices are not reasonable and necessary.",
+            "significance": "high"
+          },
+          {
+            "requirementId": "device-compatibility-exclusion",
+            "relation": "adds",
+            "polarity": "denies",
+            "valueSummary": "MRI incompatibility and interfering implanted devices can independently deny coverage.",
+            "significance": "medium"
+          },
+          {
             "requirementId": "anatomic-assessment",
             "relation": "adds",
             "polarity": "requires",
@@ -5122,10 +5400,31 @@
             "significance": "high"
           },
           {
+            "requirementId": "sleep-lab-accreditation",
+            "relation": "adds",
+            "polarity": "requires",
+            "valueSummary": "Sleep studies and downstream sleep evaluation are tied to accredited sleep-facility standards through local sleep-policy references.",
+            "significance": "medium"
+          },
+          {
+            "requirementId": "facility-appropriateness",
+            "relation": "adds",
+            "polarity": "requires",
+            "valueSummary": "Implantation must occur in facilities appropriate to the beneficiary's procedural risk and medical needs.",
+            "significance": "medium"
+          },
+          {
             "requirementId": "provider-role",
             "relation": "adds",
             "polarity": "requires",
             "valueSummary": "Sleep physician plus implanting otolaryngologist participate in selection and treatment pathway",
+            "significance": "medium"
+          },
+          {
+            "requirementId": "device-lane",
+            "relation": "adds",
+            "polarity": "requires",
+            "valueSummary": "FDA-approved HGNS device lane only, currently represented by the Inspire platform family.",
             "significance": "medium"
           },
           {
@@ -5245,6 +5544,28 @@
             }
           },
           {
+            "requirementId": "contraindication-bundle",
+            "relation": "adds",
+            "polarity": "denies",
+            "valueSummary": "Coverage is denied when the HGNS contraindication bundle is present.",
+            "significance": "high",
+            "note": "The bundle spans cardiopulmonary disease, neurologic impairment, pregnancy, incompatible implanted devices, psychiatric/functional limits, and other exclusions."
+          },
+          {
+            "requirementId": "non-fda-approval-exclusion",
+            "relation": "adds",
+            "polarity": "denies",
+            "valueSummary": "Non-FDA-approved HGNS devices are not reasonable and necessary.",
+            "significance": "high"
+          },
+          {
+            "requirementId": "device-compatibility-exclusion",
+            "relation": "adds",
+            "polarity": "denies",
+            "valueSummary": "MRI incompatibility and interfering implanted devices can independently deny coverage.",
+            "significance": "medium"
+          },
+          {
             "requirementId": "anatomic-assessment",
             "relation": "adds",
             "polarity": "requires",
@@ -5252,10 +5573,31 @@
             "significance": "high"
           },
           {
+            "requirementId": "sleep-lab-accreditation",
+            "relation": "adds",
+            "polarity": "requires",
+            "valueSummary": "Sleep studies and downstream sleep evaluation are tied to accredited sleep-facility standards through local sleep-policy references.",
+            "significance": "medium"
+          },
+          {
+            "requirementId": "facility-appropriateness",
+            "relation": "adds",
+            "polarity": "requires",
+            "valueSummary": "Implantation must occur in facilities appropriate to the beneficiary's procedural risk and medical needs.",
+            "significance": "medium"
+          },
+          {
             "requirementId": "provider-role",
             "relation": "adds",
             "polarity": "requires",
             "valueSummary": "Sleep physician plus implanting otolaryngologist participate in selection and treatment pathway",
+            "significance": "medium"
+          },
+          {
+            "requirementId": "device-lane",
+            "relation": "adds",
+            "polarity": "requires",
+            "valueSummary": "FDA-approved HGNS device lane only, currently represented by the Inspire platform family.",
             "significance": "medium"
           },
           {
@@ -5382,6 +5724,28 @@
             }
           },
           {
+            "requirementId": "contraindication-bundle",
+            "relation": "adds",
+            "polarity": "denies",
+            "valueSummary": "Coverage is denied when the HGNS contraindication bundle is present.",
+            "significance": "high",
+            "note": "The bundle spans cardiopulmonary disease, neurologic impairment, pregnancy, incompatible implanted devices, psychiatric/functional limits, and other exclusions."
+          },
+          {
+            "requirementId": "non-fda-approval-exclusion",
+            "relation": "adds",
+            "polarity": "denies",
+            "valueSummary": "Non-FDA-approved HGNS devices are not reasonable and necessary.",
+            "significance": "high"
+          },
+          {
+            "requirementId": "device-compatibility-exclusion",
+            "relation": "adds",
+            "polarity": "denies",
+            "valueSummary": "MRI incompatibility and interfering implanted devices can independently deny coverage.",
+            "significance": "medium"
+          },
+          {
             "requirementId": "anatomic-assessment",
             "relation": "adds",
             "polarity": "requires",
@@ -5389,10 +5753,31 @@
             "significance": "high"
           },
           {
+            "requirementId": "sleep-lab-accreditation",
+            "relation": "adds",
+            "polarity": "requires",
+            "valueSummary": "Sleep studies and downstream sleep evaluation are tied to accredited sleep-facility standards through local sleep-policy references.",
+            "significance": "medium"
+          },
+          {
+            "requirementId": "facility-appropriateness",
+            "relation": "adds",
+            "polarity": "requires",
+            "valueSummary": "Implantation must occur in facilities appropriate to the beneficiary's procedural risk and medical needs.",
+            "significance": "medium"
+          },
+          {
             "requirementId": "provider-role",
             "relation": "adds",
             "polarity": "requires",
             "valueSummary": "Sleep physician plus implanting otolaryngologist participate in selection and treatment pathway",
+            "significance": "medium"
+          },
+          {
+            "requirementId": "device-lane",
+            "relation": "adds",
+            "polarity": "requires",
+            "valueSummary": "FDA-approved HGNS device lane only, currently represented by the Inspire platform family.",
             "significance": "medium"
           },
           {
@@ -5512,6 +5897,28 @@
             }
           },
           {
+            "requirementId": "contraindication-bundle",
+            "relation": "adds",
+            "polarity": "denies",
+            "valueSummary": "Coverage is denied when the HGNS contraindication bundle is present.",
+            "significance": "high",
+            "note": "The bundle spans cardiopulmonary disease, neurologic impairment, pregnancy, incompatible implanted devices, psychiatric/functional limits, and other exclusions."
+          },
+          {
+            "requirementId": "non-fda-approval-exclusion",
+            "relation": "adds",
+            "polarity": "denies",
+            "valueSummary": "Non-FDA-approved HGNS devices are not reasonable and necessary.",
+            "significance": "high"
+          },
+          {
+            "requirementId": "device-compatibility-exclusion",
+            "relation": "adds",
+            "polarity": "denies",
+            "valueSummary": "MRI incompatibility and interfering implanted devices can independently deny coverage.",
+            "significance": "medium"
+          },
+          {
             "requirementId": "anatomic-assessment",
             "relation": "adds",
             "polarity": "requires",
@@ -5519,10 +5926,31 @@
             "significance": "high"
           },
           {
+            "requirementId": "sleep-lab-accreditation",
+            "relation": "adds",
+            "polarity": "requires",
+            "valueSummary": "Sleep studies and downstream sleep evaluation are tied to accredited sleep-facility standards through local sleep-policy references.",
+            "significance": "medium"
+          },
+          {
+            "requirementId": "facility-appropriateness",
+            "relation": "adds",
+            "polarity": "requires",
+            "valueSummary": "Implantation must occur in facilities appropriate to the beneficiary's procedural risk and medical needs.",
+            "significance": "medium"
+          },
+          {
             "requirementId": "provider-role",
             "relation": "adds",
             "polarity": "requires",
             "valueSummary": "Sleep physician plus implanting otolaryngologist participate in selection and treatment pathway",
+            "significance": "medium"
+          },
+          {
+            "requirementId": "device-lane",
+            "relation": "adds",
+            "polarity": "requires",
+            "valueSummary": "FDA-approved HGNS device lane only, currently represented by the Inspire platform family.",
             "significance": "medium"
           },
           {
@@ -5649,6 +6077,28 @@
             }
           },
           {
+            "requirementId": "contraindication-bundle",
+            "relation": "adds",
+            "polarity": "denies",
+            "valueSummary": "Coverage is denied when the HGNS contraindication bundle is present.",
+            "significance": "high",
+            "note": "The bundle spans cardiopulmonary disease, neurologic impairment, pregnancy, incompatible implanted devices, psychiatric/functional limits, and other exclusions."
+          },
+          {
+            "requirementId": "non-fda-approval-exclusion",
+            "relation": "adds",
+            "polarity": "denies",
+            "valueSummary": "Non-FDA-approved HGNS devices are not reasonable and necessary.",
+            "significance": "high"
+          },
+          {
+            "requirementId": "device-compatibility-exclusion",
+            "relation": "adds",
+            "polarity": "denies",
+            "valueSummary": "MRI incompatibility and interfering implanted devices can independently deny coverage.",
+            "significance": "medium"
+          },
+          {
             "requirementId": "anatomic-assessment",
             "relation": "adds",
             "polarity": "requires",
@@ -5656,10 +6106,31 @@
             "significance": "high"
           },
           {
+            "requirementId": "sleep-lab-accreditation",
+            "relation": "adds",
+            "polarity": "requires",
+            "valueSummary": "Sleep studies and downstream sleep evaluation are tied to accredited sleep-facility standards through local sleep-policy references.",
+            "significance": "medium"
+          },
+          {
+            "requirementId": "facility-appropriateness",
+            "relation": "adds",
+            "polarity": "requires",
+            "valueSummary": "Implantation must occur in facilities appropriate to the beneficiary's procedural risk and medical needs.",
+            "significance": "medium"
+          },
+          {
             "requirementId": "provider-role",
             "relation": "adds",
             "polarity": "requires",
             "valueSummary": "Sleep physician plus implanting otolaryngologist participate in selection and treatment pathway",
+            "significance": "medium"
+          },
+          {
+            "requirementId": "device-lane",
+            "relation": "adds",
+            "polarity": "requires",
+            "valueSummary": "FDA-approved HGNS device lane only, currently represented by the Inspire platform family.",
             "significance": "medium"
           },
           {
@@ -5786,6 +6257,28 @@
             }
           },
           {
+            "requirementId": "contraindication-bundle",
+            "relation": "adds",
+            "polarity": "denies",
+            "valueSummary": "Coverage is denied when the HGNS contraindication bundle is present.",
+            "significance": "high",
+            "note": "The bundle spans cardiopulmonary disease, neurologic impairment, pregnancy, incompatible implanted devices, psychiatric/functional limits, and other exclusions."
+          },
+          {
+            "requirementId": "non-fda-approval-exclusion",
+            "relation": "adds",
+            "polarity": "denies",
+            "valueSummary": "Non-FDA-approved HGNS devices are not reasonable and necessary.",
+            "significance": "high"
+          },
+          {
+            "requirementId": "device-compatibility-exclusion",
+            "relation": "adds",
+            "polarity": "denies",
+            "valueSummary": "MRI incompatibility and interfering implanted devices can independently deny coverage.",
+            "significance": "medium"
+          },
+          {
             "requirementId": "anatomic-assessment",
             "relation": "adds",
             "polarity": "requires",
@@ -5793,10 +6286,31 @@
             "significance": "high"
           },
           {
+            "requirementId": "sleep-lab-accreditation",
+            "relation": "adds",
+            "polarity": "requires",
+            "valueSummary": "Sleep studies and downstream sleep evaluation are tied to accredited sleep-facility standards through local sleep-policy references.",
+            "significance": "medium"
+          },
+          {
+            "requirementId": "facility-appropriateness",
+            "relation": "adds",
+            "polarity": "requires",
+            "valueSummary": "Implantation must occur in facilities appropriate to the beneficiary's procedural risk and medical needs.",
+            "significance": "medium"
+          },
+          {
             "requirementId": "provider-role",
             "relation": "adds",
             "polarity": "requires",
             "valueSummary": "Sleep physician plus implanting otolaryngologist participate in selection and treatment pathway",
+            "significance": "medium"
+          },
+          {
+            "requirementId": "device-lane",
+            "relation": "adds",
+            "polarity": "requires",
+            "valueSummary": "FDA-approved HGNS device lane only, currently represented by the Inspire platform family.",
             "significance": "medium"
           },
           {
@@ -5916,6 +6430,28 @@
             }
           },
           {
+            "requirementId": "contraindication-bundle",
+            "relation": "adds",
+            "polarity": "denies",
+            "valueSummary": "Coverage is denied when the HGNS contraindication bundle is present.",
+            "significance": "high",
+            "note": "The bundle spans cardiopulmonary disease, neurologic impairment, pregnancy, incompatible implanted devices, psychiatric/functional limits, and other exclusions."
+          },
+          {
+            "requirementId": "non-fda-approval-exclusion",
+            "relation": "adds",
+            "polarity": "denies",
+            "valueSummary": "Non-FDA-approved HGNS devices are not reasonable and necessary.",
+            "significance": "high"
+          },
+          {
+            "requirementId": "device-compatibility-exclusion",
+            "relation": "adds",
+            "polarity": "denies",
+            "valueSummary": "MRI incompatibility and interfering implanted devices can independently deny coverage.",
+            "significance": "medium"
+          },
+          {
             "requirementId": "anatomic-assessment",
             "relation": "adds",
             "polarity": "requires",
@@ -5923,10 +6459,31 @@
             "significance": "high"
           },
           {
+            "requirementId": "sleep-lab-accreditation",
+            "relation": "adds",
+            "polarity": "requires",
+            "valueSummary": "Sleep studies and downstream sleep evaluation are tied to accredited sleep-facility standards through local sleep-policy references.",
+            "significance": "medium"
+          },
+          {
+            "requirementId": "facility-appropriateness",
+            "relation": "adds",
+            "polarity": "requires",
+            "valueSummary": "Implantation must occur in facilities appropriate to the beneficiary's procedural risk and medical needs.",
+            "significance": "medium"
+          },
+          {
             "requirementId": "provider-role",
             "relation": "adds",
             "polarity": "requires",
             "valueSummary": "Sleep physician plus implanting otolaryngologist participate in selection and treatment pathway",
+            "significance": "medium"
+          },
+          {
+            "requirementId": "device-lane",
+            "relation": "adds",
+            "polarity": "requires",
+            "valueSummary": "FDA-approved HGNS device lane only, currently represented by the Inspire platform family.",
             "significance": "medium"
           },
           {
