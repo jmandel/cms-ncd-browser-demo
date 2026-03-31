@@ -884,6 +884,9 @@ const documentProfiles = [
       statement("followup-reevaluation-window", "operationalizes", "requires", "Treating practitioner must re-evaluate between days 31 and 91.", {
         significance: "high",
       }),
+      statement("ordering-refill-replacement-rules", "operationalizes", "requires", "LCD adds detailed written order, refill, replacement, and supply replacement rules absent from the NCD narrative.", {
+        significance: "medium",
+      }),
       statement("device-lane", "narrows", "requires", "E0470 is only reachable after documented E0601 failure; E0601 remains the base device.", {
         significance: "high",
       }),
@@ -916,6 +919,9 @@ const documentProfiles = [
       statement("device-lane", "narrows", "requires", "Covered device lane is custom-fabricated mandibular advancement only (E0486).", {
         significance: "high",
       }),
+      statement("custom-fabrication-requirement", "narrows", "requires", "Only custom-fabricated devices qualify; prefabricated devices do not.", {
+        significance: "high",
+      }),
       statement("noncovered-procedures", "narrows", "denies", "Prefabricated oral appliances and tongue-positioning devices are excluded.", {
         significance: "high",
       }),
@@ -943,6 +949,9 @@ const documentProfiles = [
         significance: "high",
       }),
       statement("anatomic-assessment", "adds", "requires", "Procedure selection depends on evidence of retropalatal or combined obstruction site.", {
+        significance: "medium",
+      }),
+      statement("facility-appropriateness", "adds", "requires", "Surgery must be furnished in a setting appropriate to the beneficiary’s medical needs and procedural risk.", {
         significance: "medium",
       }),
       statement("provider-role", "adds", "requires", "Procedure must be performed by a qualified surgeon in an appropriate setting.", {
@@ -986,6 +995,9 @@ const documentProfiles = [
       statement("board-credentialing", "adds", "requires", "Implanting surgeon described as board-certified otolaryngologist.", {
         significance: "low",
       }),
+      statement("related-document-topology", "governs", "references", "WPS links a comparatively large related-document cluster around HGNS, sleep testing, and companion coding material.", {
+        significance: "low",
+      }),
     ],
   }),
   documentProfile("lcd-hgns-cgs", {
@@ -1005,6 +1017,9 @@ const documentProfiles = [
         significance: "medium",
       }),
       statement("board-credentialing", "adds", "requires", "Implanting surgeon described as board-certified otolaryngologist.", {
+        significance: "low",
+      }),
+      statement("related-document-topology", "governs", "references", "CGS links a comparatively smaller companion-document set than WPS.", {
         significance: "low",
       }),
     ],
@@ -1031,6 +1046,9 @@ const documentProfiles = [
       statement("board-credentialing", "differs", "requires", "Board-certified or board-eligible otolaryngologist accepted.", {
         significance: "low",
       }),
+      statement("document-structure-variation", "governs", "structures", "Current JE version carries the standard HGNS LCD layout and serves as the consolidation target for retired JF policy.", {
+        significance: "low",
+      }),
     ],
   }),
   documentProfile("lcd-hgns-noridian-jf-legacy", {
@@ -1050,6 +1068,12 @@ const documentProfiles = [
         significance: "low",
       }),
       statement("cross-reference-local-sleep-policy", "differs", "references", "Legacy JF version points to a different local sleep-study policy than the consolidated JE version.", {
+        significance: "low",
+      }),
+      statement("policy-status-lifecycle", "governs", "status", "This LCD is retired and consolidated into the JE policy.", {
+        significance: "medium",
+      }),
+      statement("document-structure-variation", "governs", "structures", "Legacy JF version is the only HGNS LCD with a dedicated history section documenting retirement.", {
         significance: "low",
       }),
     ],
@@ -1076,6 +1100,12 @@ const documentProfiles = [
       statement("article-documentation-specificity", "codes", "documents", "Palmetto article expects specific documentation categories instead of generic record retention language.", {
         significance: "medium",
       }),
+      statement("document-structure-variation", "governs", "structures", "Palmetto LCD is structurally more concise than other HGNS LCDs and omits some common sections.", {
+        significance: "medium",
+      }),
+      statement("evidence-summary-style", "governs", "summarizes", "Palmetto uses a distinct evidence-summary and citation style compared with the paragraph-form analysis used by other MACs.", {
+        significance: "medium",
+      }),
     ],
   }),
   documentProfile("lcd-hgns-ngs", {
@@ -1098,6 +1128,9 @@ const documentProfiles = [
         significance: "low",
       }),
       statement("provider-role", "differs", "requires", "Contraindication wording uniquely narrows neuromuscular disease to conditions affecting the respiratory system.", {
+        significance: "low",
+      }),
+      statement("document-structure-variation", "governs", "structures", "NGS uses shorter, restructured limitation wording than the common family text.", {
         significance: "low",
       }),
     ],
@@ -1245,6 +1278,9 @@ const documentProfiles = [
       statement("modifier-guidance", "differs", "codes", "Modifier 52 guidance present for partial revision/removal.", {
         significance: "medium",
       }),
+      statement("modifier-guidance", "differs", "codes", "ABN modifier guidance and ordering/referring NPI instructions appear here more explicitly than in other MAC articles.", {
+        significance: "medium",
+      }),
       statement("article-documentation-specificity", "differs", "documents", "Explicit documentation categories: symptoms, polysomnography, DISE, BMI, and related evidence.", {
         significance: "high",
       }),
@@ -1290,94 +1326,155 @@ const documentProfiles = [
       }),
     ],
   }),
+  documentProfile("article-hgns-cgs-response", {
+    scopeLevel: "local",
+    roleInPathway: "HGNS response-to-comments record",
+    focus: "Captures the contractor’s rationale and finalization context for the coordinated HGNS rollout.",
+    baselineDocumentIds: ["lcd-hgns-cgs"],
+    statements: [
+      statement("response-to-comments-rationale", "governs", "responds", "Records stakeholder feedback and the contractor’s rationale for the final HGNS policy language.", {
+        significance: "medium",
+      }),
+      statement("policy-status-lifecycle", "governs", "status", "Anchors the rollout history and effective-date context for the HGNS policy family.", {
+        significance: "low",
+      }),
+    ],
+  }),
+  documentProfile("article-hgns-noridian-response-je", {
+    scopeLevel: "local",
+    roleInPathway: "HGNS response-to-comments record",
+    focus: "Provides Noridian JE response context for final HGNS wording and implementation.",
+    baselineDocumentIds: ["lcd-hgns-noridian"],
+    statements: [
+      statement("response-to-comments-rationale", "governs", "responds", "Records stakeholder feedback and Noridian’s rationale for final JE HGNS policy language.", {
+        significance: "medium",
+      }),
+      statement("policy-status-lifecycle", "governs", "status", "Captures the live JE policy’s comment-resolution history.", {
+        significance: "low",
+      }),
+    ],
+  }),
+  documentProfile("article-hgns-noridian-response-jf", {
+    scopeLevel: "local",
+    roleInPathway: "HGNS response-to-comments record",
+    focus: "Provides Noridian JF response context for the legacy HGNS variant that was later retired and consolidated.",
+    baselineDocumentIds: ["lcd-hgns-noridian-jf-legacy"],
+    statements: [
+      statement("response-to-comments-rationale", "governs", "responds", "Records stakeholder feedback and rationale for the legacy JF HGNS wording.", {
+        significance: "medium",
+      }),
+      statement("policy-status-lifecycle", "governs", "status", "Forms part of the history of the retired JF policy branch.", {
+        significance: "medium",
+      }),
+    ],
+  }),
+  documentProfile("article-hgns-fcso-response", {
+    scopeLevel: "local",
+    roleInPathway: "HGNS response-to-comments record",
+    focus: "Captures First Coast’s response-to-comments context for HGNS rollout.",
+    baselineDocumentIds: ["lcd-hgns-fcso"],
+    statements: [
+      statement("response-to-comments-rationale", "governs", "responds", "Records stakeholder feedback and finalization rationale for the First Coast HGNS policy.", {
+        significance: "medium",
+      }),
+      statement("policy-status-lifecycle", "governs", "status", "Anchors the rollout history for this MAC’s HGNS implementation.", {
+        significance: "low",
+      }),
+    ],
+  }),
+  documentProfile("article-hgns-novitas-response", {
+    scopeLevel: "local",
+    roleInPathway: "HGNS response-to-comments record",
+    focus: "Captures Novitas’ response-to-comments context for HGNS rollout.",
+    baselineDocumentIds: ["lcd-hgns-novitas"],
+    statements: [
+      statement("response-to-comments-rationale", "governs", "responds", "Records stakeholder feedback and finalization rationale for the Novitas HGNS policy.", {
+        significance: "medium",
+      }),
+      statement("policy-status-lifecycle", "governs", "status", "Anchors the rollout history for this MAC’s HGNS implementation.", {
+        significance: "low",
+      }),
+    ],
+  }),
+  documentProfile("article-hgns-palmetto-response", {
+    scopeLevel: "local",
+    roleInPathway: "HGNS response-to-comments record",
+    focus: "Captures Palmetto’s response-to-comments context for HGNS rollout and final wording.",
+    baselineDocumentIds: ["lcd-hgns-palmetto"],
+    statements: [
+      statement("response-to-comments-rationale", "governs", "responds", "Records stakeholder feedback and finalization rationale for the Palmetto HGNS policy.", {
+        significance: "medium",
+      }),
+      statement("policy-status-lifecycle", "governs", "status", "Anchors the rollout history and final-effective-date context for Palmetto HGNS.", {
+        significance: "low",
+      }),
+    ],
+  }),
 ];
 
-const familyDeltaSummaries = [
+const familySummaryBlueprints = [
   {
     familyId: "sleep-testing",
     baselineDocumentIds: ["ncd-sleep-testing"],
-    localDocumentIds: [],
-    counts: {
-      baseline: 4,
-      reuses: 0,
-      narrows: 0,
-      operationalizes: 0,
-      adds: 0,
-      differs: 0,
-      codes: 0,
-    },
+    localDocumentIds: [] as string[],
     takeaway: "Pure national baseline. Downstream therapies inherit this diagnostic floor and then narrow it.",
   },
   {
     familyId: "pap-therapy",
-    baselineDocumentIds: ["ncd-cpap", "ncd-sleep-testing"],
+    baselineDocumentIds: ["ncd-sleep-testing", "ncd-cpap"],
     localDocumentIds: ["lcd-pap-dme"],
-    counts: {
-      baseline: 5,
-      reuses: 2,
-      narrows: 3,
-      operationalizes: 3,
-      adds: 0,
-      differs: 0,
-      codes: 0,
-    },
     takeaway: "PAP LCD does not reinvent OSA; it mostly operationalizes and narrows the national CPAP rule.",
   },
   {
     familyId: "oral-appliance",
     baselineDocumentIds: ["ncd-sleep-testing", "ncd-cpap"],
-    localDocumentIds: ["lcd-oral-appliance"],
-    counts: {
-      baseline: 0,
-      reuses: 2,
-      narrows: 3,
-      operationalizes: 0,
-      adds: 2,
-      differs: 1,
-      codes: 0,
-    },
+    localDocumentIds: raw.sourceDocuments.filter((source) => source.familyId === "oral-appliance").map((source) => source.id),
     takeaway: "Local branch reuses the national diagnostic logic but adds a new device lane and severe-disease PAP step-therapy path.",
   },
   {
     familyId: "surgery",
     baselineDocumentIds: ["ncd-sleep-testing", "ncd-cpap"],
-    localDocumentIds: ["lcd-surgery-wps", "article-surgery-wps"],
-    counts: {
-      baseline: 0,
-      reuses: 0,
-      narrows: 3,
-      operationalizes: 0,
-      adds: 3,
-      differs: 1,
-      codes: 1,
-    },
+    localDocumentIds: raw.sourceDocuments.filter((source) => source.familyId === "surgery").map((source) => source.id),
     takeaway: "Surgery is genuinely narrower than the national OSA floor and carries explicit non-covered procedures.",
   },
   {
     familyId: "hgns",
     baselineDocumentIds: ["ncd-sleep-testing", "ncd-cpap"],
-    localDocumentIds: [
-      "lcd-hgns-wps",
-      "lcd-hgns-cgs",
-      "lcd-hgns-noridian",
-      "lcd-hgns-noridian-jf-legacy",
-      "lcd-hgns-palmetto",
-      "lcd-hgns-ngs",
-      "lcd-hgns-fcso",
-      "lcd-hgns-novitas",
-    ],
-    counts: {
-      baseline: 0,
-      reuses: 0,
-      narrows: 1,
-      operationalizes: 0,
-      adds: 6,
-      differs: 4,
-      codes: 5,
-    },
-    takeaway: "HGNS is mostly a new local implant-selection framework layered on top of the older national OSA diagnostic floor, with some real MAC-level wording and billing variation.",
+    localDocumentIds: raw.sourceDocuments.filter((source) => source.familyId === "hgns").map((source) => source.id),
+    takeaway: "HGNS is mostly a new local implant-selection framework layered on top of the older national OSA diagnostic floor, with real MAC-level wording, governance, and billing variation.",
   },
 ];
+
+const relationIds = relationLegend.map((item) => item.id);
+
+const familyDeltaSummaries = familySummaryBlueprints.map((summary) => {
+  const relevantProfiles = documentProfiles.filter(
+    (profile) =>
+      summary.baselineDocumentIds.includes(profile.documentId) ||
+      summary.localDocumentIds.includes(profile.documentId),
+  );
+
+  const counts = Object.fromEntries(relationIds.map((id) => [id, 0])) as Record<string, number>;
+  relevantProfiles.flatMap((profile) => profile.statements).forEach((item) => {
+    counts[item.relation] = (counts[item.relation] ?? 0) + 1;
+  });
+
+  return {
+    familyId: summary.familyId,
+    baselineDocumentIds: summary.baselineDocumentIds,
+    localDocumentIds: summary.localDocumentIds,
+    counts,
+    takeaway: summary.takeaway,
+  };
+});
+
+const coverageAudit = {
+  totalCuratedDocuments: raw.sourceDocuments.length,
+  modeledDocuments: documentProfiles.length,
+  unmodeledDocuments: raw.sourceDocuments
+    .filter((source) => !documentProfiles.some((profile) => profile.documentId === source.id))
+    .map((source) => source.id),
+};
 
 const familyLineage = {
   columns: raw.policyFamilies.map((family) => ({
@@ -1637,6 +1734,121 @@ const familyLineage = {
         },
       ],
     },
+    {
+      requirementId: "device-lane",
+      whyItMatters: "A large share of meaningful policy branching in OSA is really about which device lane becomes coverable and under what conditions.",
+      cells: [
+        {
+          familyId: "sleep-testing",
+          relation: "baseline",
+          valueSummary: "Diagnostic only; no treatment-device lane.",
+          sourceDocumentIds: [],
+        },
+        {
+          familyId: "pap-therapy",
+          relation: "narrows",
+          valueSummary: "E0601 is the base lane; E0470 is an escalation after failure; E0471 remains non-covered for OSA.",
+          sourceDocumentIds: ["lcd-pap-dme"],
+        },
+        {
+          familyId: "oral-appliance",
+          relation: "narrows",
+          valueSummary: "Custom-fabricated E0486 only.",
+          sourceDocumentIds: ["lcd-oral-appliance"],
+        },
+        {
+          familyId: "surgery",
+          relation: "adds",
+          valueSummary: "Coverage is procedure-driven rather than device-driven, with explicit covered and excluded operation lanes.",
+          sourceDocumentIds: ["lcd-surgery-wps", "article-surgery-wps"],
+        },
+        {
+          familyId: "hgns",
+          relation: "adds",
+          valueSummary: "FDA-approved HGNS implant lane only, then refined by contractor-specific billing articles.",
+          sourceDocumentIds: ["lcd-hgns-wps", "article-hgns-noridian", "article-hgns-palmetto"],
+        },
+      ],
+    },
+    {
+      requirementId: "contraindication-bundle",
+      whyItMatters: "This is where some therapies stop being simple severity thresholds and become true patient-selection frameworks.",
+      cells: [
+        {
+          familyId: "sleep-testing",
+          relation: "baseline",
+          valueSummary: "No therapy contraindication bundle because the record is diagnostic.",
+          sourceDocumentIds: [],
+        },
+        {
+          familyId: "pap-therapy",
+          relation: "baseline",
+          valueSummary: "No comparably enumerated contraindication bundle in the curated NCD/LCD slice.",
+          sourceDocumentIds: ["ncd-cpap"],
+        },
+        {
+          familyId: "oral-appliance",
+          relation: "baseline",
+          valueSummary: "Branch logic is mainly severity + PAP path, not a long contraindication list.",
+          sourceDocumentIds: ["lcd-oral-appliance"],
+        },
+        {
+          familyId: "surgery",
+          relation: "narrows",
+          valueSummary: "Expressed more as non-covered procedures and failed-treatment prerequisites than as a formal contraindication bundle.",
+          sourceDocumentIds: ["lcd-surgery-wps"],
+        },
+        {
+          familyId: "hgns",
+          relation: "adds",
+          valueSummary: "Explicit multi-domain contraindication bundle including cardiopulmonary, neurologic, psychiatric, pregnancy, and device-compatibility exclusions.",
+          sourceDocumentIds: ["lcd-hgns-noridian", "lcd-hgns-palmetto", "lcd-hgns-wps"],
+        },
+      ],
+    },
+    {
+      requirementId: "response-to-comments-rationale",
+      whyItMatters: "Response records are part of the latent structure too: they explain final wording, rollout context, and contested policy choices.",
+      cells: [
+        {
+          familyId: "sleep-testing",
+          relation: "baseline",
+          valueSummary: "No response-to-comments record represented in this curated slice.",
+          sourceDocumentIds: [],
+        },
+        {
+          familyId: "pap-therapy",
+          relation: "baseline",
+          valueSummary: "No response-to-comments record represented in this curated slice.",
+          sourceDocumentIds: [],
+        },
+        {
+          familyId: "oral-appliance",
+          relation: "baseline",
+          valueSummary: "No response-to-comments record represented in this curated slice.",
+          sourceDocumentIds: [],
+        },
+        {
+          familyId: "surgery",
+          relation: "baseline",
+          valueSummary: "No response-to-comments record represented in this curated slice.",
+          sourceDocumentIds: [],
+        },
+        {
+          familyId: "hgns",
+          relation: "governs",
+          valueSummary: "Every curated HGNS MAC includes a response-to-comments or equivalent rollout-history record that explains final policy rationale.",
+          sourceDocumentIds: [
+            "article-hgns-cgs-response",
+            "article-hgns-noridian-response-je",
+            "article-hgns-noridian-response-jf",
+            "article-hgns-fcso-response",
+            "article-hgns-novitas-response",
+            "article-hgns-palmetto-response",
+          ],
+        },
+      ],
+    },
   ],
 };
 
@@ -1758,6 +1970,7 @@ const ruleMetamodel = {
   requirementGroups,
   requirementCatalog,
   documentProfiles,
+  coverageAudit,
   familyDeltaSummaries,
   familyLineage,
   contractorVariance,

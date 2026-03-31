@@ -440,6 +440,11 @@ interface RuleMetamodel {
   requirementGroups: RuleRequirementGroup[];
   requirementCatalog: RuleRequirementEntry[];
   documentProfiles: RuleDocumentProfile[];
+  coverageAudit?: {
+    totalCuratedDocuments: number;
+    modeledDocuments: number;
+    unmodeledDocuments: string[];
+  };
   familyDeltaSummaries: FamilyDeltaSummary[];
   familyLineage: {
     columns: Array<{ familyId: string; label: string }>;
@@ -486,7 +491,7 @@ interface AppState {
 
 const state: AppState = {
   model: null,
-  selectedFamilyId: "hgns",
+  selectedFamilyId: "pap-therapy",
 };
 
 const app = document.querySelector<HTMLDivElement>("#app");
@@ -702,6 +707,7 @@ function relationVariant(relation: string) {
   if (relation === "operationalizes") return "blue";
   if (relation === "adds") return "plum";
   if (relation === "differs") return "rose";
+  if (relation === "governs") return "ink";
   if (relation === "codes") return "ink";
   return "neutral";
 }
@@ -744,26 +750,27 @@ function renderHero(model: PrototypeModel) {
   const hgnsMacCount = model.crossMacComparison?.criteriaMatrix.contractors.length ?? model.hgns.macPolicies.length;
   const typedTreatmentCount = model.treatmentModels?.length ?? model.policyFamilies.length;
   const rules = ruleMetamodel(model);
+  const modeledDocs = rules?.coverageAudit?.modeledDocuments ?? list(rules?.documentProfiles).length;
+  const totalDocs = rules?.coverageAudit?.totalCuratedDocuments ?? model.sourceDocuments.length;
 
   return `
     <section class="hero panel">
       <div class="hero-copy">
-        <div class="eyebrow">Codex Prototype</div>
+        <div class="eyebrow">Tutorial Prototype</div>
         <h1>${escapeHtml(model.meta.title)}</h1>
-        <p class="hero-subtitle">${escapeHtml(model.meta.subtitle)}</p>
-        <p class="hero-note">${escapeHtml(model.meta.focus)}</p>
+        <p class="hero-subtitle">This tutorial uses obstructive sleep apnea to show that CMS NCDs, LCDs, companion billing articles, and response records already contain latent structure that can be extracted from public HTML or PDF-like sources and turned into computable policy objects.</p>
+        <p class="hero-note">The OSA dataset here is hand-curated as a demonstration target for AI-assisted extraction: a clinician-friendly view of what the national baseline says, how local contractor policy branches from it, where coding logic becomes operational, and which abstractions are already recoverable today.</p>
       </div>
 
       <div class="hero-stats">
-        ${renderStat("Policy families", String(model.policyFamilies.length), "normalized lanes")}
-        ${renderStat("Layer views", String(model.layeringModels.length), "baseline versus local delta")}
-        ${renderStat("Evidence vars", String(model.evidenceVariables.length), "reusable data elements")}
-        ${rules ? renderStat("Requirements", String(rules.requirementCatalog.length), "canonical rule entities") : ""}
-        ${renderStat("Code atlases", String(model.codeCatalog.families.length), "family-specific structured tables")}
-        ${renderStat("Typed treatments", String(typedTreatmentCount), "integrated comparison surface")}
-        ${renderStat("HGNS MACs", String(hgnsMacCount), "active plus legacy contractor variants")}
-        ${rules ? renderStat("Rule packs", String(rules.documentProfiles.length), "document-level structured extracts") : ""}
-        ${renderStat("Sources", String(model.sourceDocuments.length), "integrated reviewed documents")}
+        ${renderStat("Open CMS docs", String(model.sourceDocuments.length), "public NCD/LCD/article records")}
+        ${rules ? renderStat("Modeled docs", `${modeledDocs}/${totalDocs}`, "curated source coverage") : ""}
+        ${rules ? renderStat("Requirements", String(rules.requirementCatalog.length), "canonical policy entities") : ""}
+        ${rules ? renderStat("Rule packs", String(rules.documentProfiles.length), "document-level extracts") : ""}
+        ${renderStat("Policy families", String(model.policyFamilies.length), "OSA treatment branches")}
+        ${renderStat("HGNS MACs", String(hgnsMacCount), "consistency/conflict demo")}
+        ${renderStat("Code atlases", String(model.codeCatalog.families.length), "claim-layer structures")}
+        ${renderStat("Typed treatments", String(typedTreatmentCount), "computed comparison surface")}
       </div>
     </section>
   `;
@@ -776,6 +783,282 @@ function renderStat(label: string, value: string, note: string) {
       <div class="stat-label">${escapeHtml(label)}</div>
       <div class="stat-note">${escapeHtml(note)}</div>
     </div>
+  `;
+}
+
+function renderChapterIntro(step: number, eyebrow: string, title: string, copy: string) {
+  return `
+    <section class="panel chapter-panel">
+      <div class="chapter-topline">
+        <span class="chapter-step">Step ${step}</span>
+        <span class="chapter-eyebrow">${escapeHtml(eyebrow)}</span>
+      </div>
+      <h2 class="chapter-title">${escapeHtml(title)}</h2>
+      <p class="chapter-copy">${escapeHtml(copy)}</p>
+    </section>
+  `;
+}
+
+function renderMethodology(model: PrototypeModel) {
+  const rules = ruleMetamodel(model);
+  if (!rules) {
+    return "";
+  }
+
+  const sourceCount = model.sourceDocuments.length;
+  const responseCount = model.sourceDocuments.filter((source) => source.title.startsWith("Response to Comments")).length;
+  const articleCount = model.sourceDocuments.filter((source) => source.type === "Article" && !source.title.startsWith("Response to Comments")).length;
+  const ncdCount = model.sourceDocuments.filter((source) => source.type === "NCD").length;
+  const lcdCount = model.sourceDocuments.filter((source) => source.type === "LCD").length;
+
+  return `
+    <section class="panel">
+      <div class="section-head">
+        <div>
+          <div class="eyebrow">What This Demo Is</div>
+          <h2>Manual Curation As A Target State For Automation</h2>
+          <p class="section-copy">The point is not that OSA should be hand-entered forever. The point is that public CMS documents already expose enough regularity for AI agents to recover high-value structure: indications, thresholds, exclusions, provider roles, coding layers, document lineage, and policy lifecycle context.</p>
+        </div>
+      </div>
+
+      <div class="tutorial-grid tutorial-grid-3">
+        <article class="tutorial-card">
+          <div class="eyebrow">Open Source In</div>
+          <h3>Raw CMS Material</h3>
+          <p>${sourceCount} public CMS records were reviewed: ${ncdCount} NCDs, ${lcdCount} LCDs, ${articleCount} companion articles, and ${responseCount} response-to-comments records. This is the public policy stack a clinician or informaticist can already inspect today.</p>
+        </article>
+        <article class="tutorial-card">
+          <div class="eyebrow">Structured Here</div>
+          <h3>Computable Policy Objects</h3>
+          <p>${rules.requirementCatalog.length} canonical requirements and ${rules.documentProfiles.length} document rule packs now let the app compare OSA policies without reading each document side by side by hand.</p>
+        </article>
+        <article class="tutorial-card">
+          <div class="eyebrow">Automatable Today</div>
+          <h3>AI-Assistable Workflow</h3>
+          <p>Good extraction today can recover thresholds, exclusions, provider roles, code tables, related-document topology, and cross-document deltas. Manual review is still useful where wording conflicts, legacy variants, or revision histories need adjudication.</p>
+        </article>
+      </div>
+    </section>
+  `;
+}
+
+function renderCmsGlossary() {
+  const entries = [
+    {
+      term: "NCD",
+      title: "National coverage floor",
+      body: "A National Coverage Determination is the Medicare-wide baseline. For OSA, the NCDs define the covered sleep-test pathways and the first-line CPAP framework.",
+    },
+    {
+      term: "LCD",
+      title: "Local contractor coverage rule",
+      body: "A Local Coverage Determination is written by a Medicare Administrative Contractor, or MAC. LCDs can reuse the NCD, narrow it, operationalize it, or create a therapy-specific branch.",
+    },
+    {
+      term: "Article",
+      title: "Claim execution layer",
+      body: "Companion billing articles translate clinical coverage into ICD-10, HCPCS/CPT, modifiers, and documentation instructions. This is often where claim logic becomes most computable.",
+    },
+    {
+      term: "MAC",
+      title: "Regional Medicare contractor",
+      body: "MACs administer Medicare claims in defined jurisdictions. In OSA, MAC-specific HGNS LCDs look similar clinically but still differ in rollout history and coding details.",
+    },
+    {
+      term: "Response record",
+      title: "Revision and governance context",
+      body: "Response-to-comments documents explain why a policy changed, which objections were answered, and whether a branch is current, retired, or consolidated into another LCD.",
+    },
+  ];
+
+  return `
+    <section class="panel">
+      <div class="section-head">
+        <div>
+          <div class="eyebrow">CMS Vocabulary</div>
+          <h2>The Policy Stack In Plain Language</h2>
+          <p class="section-copy">If you know the medicine but not CMS policy mechanics, this is the translation layer. Think of these as different record types in one policy stack rather than unrelated pages.</p>
+        </div>
+      </div>
+
+      <div class="tutorial-grid tutorial-grid-3">
+        ${entries
+          .map(
+            (entry) => `
+              <article class="tutorial-card tutorial-card-glossary">
+                <div class="tutorial-card-top">
+                  <span class="tutorial-term">${escapeHtml(entry.term)}</span>
+                  <span class="tutorial-label">${escapeHtml(entry.title)}</span>
+                </div>
+                <p>${escapeHtml(entry.body)}</p>
+              </article>
+            `,
+          )
+          .join("")}
+      </div>
+    </section>
+  `;
+}
+
+function renderSourceLandscape(model: PrototypeModel) {
+  const rules = ruleMetamodel(model);
+  if (!rules) {
+    return "";
+  }
+
+  const docGroups = [
+    {
+      label: "NCDs",
+      count: model.sourceDocuments.filter((source) => source.type === "NCD").length,
+      body: "National baseline documents define the Medicare-wide diagnostic or first-line treatment floor.",
+      examples: ["240.4.1", "240.4"],
+    },
+    {
+      label: "LCDs",
+      count: model.sourceDocuments.filter((source) => source.type === "LCD").length,
+      body: "Local documents narrow, operationalize, or create therapy-specific branches on top of that floor.",
+      examples: ["L33718", "L33611", "L34526", "L38310"],
+    },
+    {
+      label: "Billing Articles",
+      count: model.sourceDocuments.filter((source) => source.type === "Article" && !source.title.startsWith("Response to Comments")).length,
+      body: "Articles convert narrative coverage logic into code tables, modifiers, diagnosis lanes, and documentation expectations.",
+      examples: ["A57948", "A58075", "A56953"],
+    },
+    {
+      label: "Response Records",
+      count: model.sourceDocuments.filter((source) => source.title.startsWith("Response to Comments")).length,
+      body: "Response-to-comments records expose rollout rationale, revisions, and lifecycle context that matter for policy governance and change tracking.",
+      examples: ["A57930", "A57938", "A58070"],
+    },
+  ];
+
+  return `
+    <section class="panel">
+      <div class="section-head">
+        <div>
+          <div class="eyebrow">Latent Structure</div>
+          <h2>What Already Exists In The Public Documents</h2>
+          <p class="section-copy">CMS pages do not arrive as a neat API for clinical policy logic, but the patterns are already there. Different record types play different roles, and those roles can be normalized into reusable requirement entities and document packs.</p>
+        </div>
+      </div>
+
+      <div class="tutorial-grid tutorial-grid-4">
+        ${docGroups
+          .map(
+            (group) => `
+              <article class="tutorial-card">
+                <div class="tutorial-card-top">
+                  <span class="tutorial-count">${group.count}</span>
+                  <span class="tutorial-label">${escapeHtml(group.label)}</span>
+                </div>
+                <p>${escapeHtml(group.body)}</p>
+                <div class="delta-counts">${group.examples.map((example) => noteChip(example, "neutral")).join("")}</div>
+              </article>
+            `,
+          )
+          .join("")}
+      </div>
+
+      <div class="tutorial-grid tutorial-grid-4">
+        ${rules.requirementGroups
+          .map((group) => {
+            const count = rules.requirementCatalog.filter((item) => item.groupId === group.id).length;
+            return `
+              <article class="tutorial-card">
+                <div class="tutorial-card-top">
+                  <span class="tutorial-count">${count}</span>
+                  <span class="tutorial-label">${escapeHtml(group.label)}</span>
+                </div>
+                <p>${escapeHtml(group.description)}</p>
+              </article>
+            `;
+          })
+          .join("")}
+      </div>
+    </section>
+  `;
+}
+
+function renderDocumentRuleCard(model: PrototypeModel, profile: RuleDocumentProfile) {
+  const requirements = requirementMap(model);
+
+  return `
+    <article class="doc-rule-card">
+      <div class="doc-rule-head">
+        <div>
+          <div class="delta-counts">
+            ${noteChip(profile.scopeLevel, profile.scopeLevel === "national" ? "ncd" : profile.scopeLevel === "local" ? "lcd" : "article")}
+            ${noteChip(profile.roleInPathway, "neutral")}
+          </div>
+          <h3>${docChip(model, profile.displayId, profile.displayId, profile.type === "NCD" ? "ncd" : profile.type === "LCD" ? "lcd" : "article", profile.title)}</h3>
+        </div>
+      </div>
+
+      <p class="doc-rule-focus">${escapeHtml(profile.focus)}</p>
+
+      ${
+        profile.baselineDocumentIds.length
+          ? `
+            <div class="requirement-subhead">Compared against</div>
+            <div class="delta-counts">
+              ${profile.baselineDocumentIds
+                .map((documentId) => {
+                  const source = sourceMap(model).get(documentId);
+                  return source ? docChip(model, source.displayId, source.displayId, "neutral", source.title) : "";
+                })
+                .join("")}
+            </div>
+          `
+          : ""
+      }
+
+      <div class="rule-statement-stack">
+        ${profile.statements
+          .map((item) => {
+            const requirement = requirements.get(item.requirementId);
+            return `
+              <div class="rule-statement-card">
+                <div class="rule-statement-top">
+                  ${relationChip(item.relation, item.relation)}
+                  ${noteChip(requirement?.shortLabel ?? item.requirementId, "neutral")}
+                  ${noteChip(item.polarity, "muted")}
+                </div>
+                <div class="rule-statement-value">${escapeHtml(item.valueSummary)}</div>
+                ${item.note ? `<div class="variation-note">${escapeHtml(item.note)}</div>` : ""}
+              </div>
+            `;
+          })
+          .join("")}
+      </div>
+    </article>
+  `;
+}
+
+function renderNcdTutorial(model: PrototypeModel) {
+  const rules = ruleMetamodel(model);
+  if (!rules) {
+    return "";
+  }
+
+  const ncdProfiles = ["ncd-sleep-testing", "ncd-cpap"]
+    .map((id) => rules.documentProfiles.find((profile) => profile.documentId === id))
+    .filter((profile): profile is RuleDocumentProfile => Boolean(profile));
+
+  return `
+    <section class="panel">
+      <div class="section-head">
+        <div>
+          <div class="eyebrow">National Layer</div>
+          <h2>What The NCDs Already Contain</h2>
+          <p class="section-copy">Before comparing local policy, the tutorial extracts the national baseline. In OSA, the two key NCDs already encode a real decision grammar: valid sleep-test modalities, severity thresholds, mild-disease branches, and the initial CPAP trial concept.</p>
+        </div>
+      </div>
+
+      <div class="tutorial-grid tutorial-grid-2">
+        ${ncdProfiles.map((profile) => renderDocumentRuleCard(model, profile)).join("")}
+      </div>
+    </section>
   `;
 }
 
@@ -811,9 +1094,9 @@ function renderFamilyRail(model: PrototypeModel) {
     <section class="panel">
       <div class="section-head">
         <div>
-          <div class="eyebrow">Policy Families</div>
-          <h2>Disease Pathway</h2>
-          <p class="section-copy">Select a family. The layering, code atlas, evidence view, and HGNS comparison all retarget from this choice.</p>
+          <div class="eyebrow">Downstream Branches</div>
+          <h2>Choose A Therapy Lens</h2>
+          <p class="section-copy">After the NCD baseline, every downstream branch changes the logic differently. Select a therapy family and the next sections will show how local policy reuses, narrows, operationalizes, or replaces the national layer.</p>
         </div>
       </div>
 
@@ -857,7 +1140,7 @@ function renderFamilyFocus(model: PrototypeModel) {
     <section class="panel">
       <div class="section-head">
         <div>
-          <div class="eyebrow">Selected Family</div>
+          <div class="eyebrow">Selected Branch</div>
           <h2>${escapeHtml(family.label)}</h2>
         </div>
         <div class="focus-stage ${toneClass(family.tone)}">${escapeHtml(family.stage)}</div>
@@ -966,9 +1249,9 @@ function renderRuleSemantics(model: PrototypeModel) {
     <section class="panel">
       <div class="section-head">
         <div>
-          <div class="eyebrow">Semantic Layer</div>
+          <div class="eyebrow">How The Tutorial Thinks</div>
           <h2>Coverage Semantics</h2>
-          <p class="section-copy">This is the abstraction layer that makes questions like "is the LCD really different from the NCD?" computable. Rules are decomposed into canonical requirements, document-level statements, and family-level delta patterns.</p>
+          <p class="section-copy">This abstraction layer is the bridge from unstructured CMS narrative to computable comparison. It lets the tutorial ask whether a local policy is truly new logic, a stricter version of the NCD, a local workflow translation, or just a billing-layer implementation detail.</p>
         </div>
       </div>
 
@@ -1014,6 +1297,7 @@ function renderRuleSemantics(model: PrototypeModel) {
             const family = familyMap(model).get(summary.familyId);
             const active = summary.familyId === state.selectedFamilyId;
             const countEntries = Object.entries(summary.counts).filter(([, value]) => value > 0);
+            const relationLegend = new Map(rules.relationLegend.map((item) => [item.id, item]));
 
             return `
               <article class="delta-card ${active ? "is-active" : ""}">
@@ -1029,9 +1313,14 @@ function renderRuleSemantics(model: PrototypeModel) {
                 <p>${escapeHtml(summary.takeaway)}</p>
                 <div class="delta-counts">
                   ${countEntries
-                    .map(([relation, value]) =>
-                      relationChip(`${value} ${relation}`, relation, `${value} structured statements classified as ${relation}.`),
-                    )
+                    .map(([relation, value]) => {
+                      const relationInfo = relationLegend.get(relation);
+                      const label = relationInfo ? `${value} ${relationInfo.label}` : `${value} ${relation}`;
+                      const title = relationInfo
+                        ? `${value} structured statements classified as ${relationInfo.label.toLowerCase()}.`
+                        : `${value} structured statements classified as ${relation}.`;
+                      return relationChip(label, relation, title);
+                    })
                     .join("")}
                 </div>
                 <div class="delta-sources">
@@ -2420,28 +2709,60 @@ function render(model: PrototypeModel) {
     <div class="codex-shell">
       <header class="masthead">
         <div>
-          <div class="eyebrow">Hand-Curated Disease Prototype</div>
+          <div class="eyebrow">Hand-Curated OSA Tutorial</div>
           <div class="masthead-title">${escapeHtml(model.meta.title)}</div>
         </div>
         <div class="masthead-note">Reviewed ${escapeHtml(formatDate(model.meta.reviewedOn))}</div>
       </header>
 
       ${renderHero(model)}
-      ${renderInsights(model)}
+      ${renderChapterIntro(
+        1,
+        "Open CMS Material",
+        "What Latent Structure Already Exists?",
+        "Start with the raw public record types and the semantic layers we can recover from them. OSA is the lens, but the lesson is about the underlying structure of CMS policy documents.",
+      )}
+      ${renderMethodology(model)}
+      ${renderCmsGlossary()}
+      ${renderSourceLandscape(model)}
+      ${renderRuleSemantics(model)}
+
+      ${renderChapterIntro(
+        2,
+        "National Baseline",
+        "The NCDs Already Encode A Policy Grammar",
+        "The OSA NCDs are not just prose. Once extracted, they define valid diagnostic modalities, severity thresholds, mild-disease exceptions, and the first-line CPAP pathway.",
+      )}
+      ${renderNcdTutorial(model)}
+      ${renderEligibilityLandscape(model)}
+
+      ${renderChapterIntro(
+        3,
+        "Local Interaction",
+        "How LCDs Constrain, Operationalize, Or Replace The NCD",
+        "Next the tutorial pivots from the national floor to local therapy branches. This is where the same OSA domain becomes different policy depending on device, procedure, and contractor context.",
+      )}
       ${renderFamilyRail(model)}
       ${renderFamilyFocus(model)}
-      ${renderRuleSemantics(model)}
-      ${renderRequirementDictionary(model)}
       ${renderFamilyLineage(model)}
       ${renderSelectedFamilyRuleLedger(model)}
-      ${renderEligibilityLandscape(model)}
-      ${renderLayering(model)}
-      ${renderMatrix(model)}
-      ${renderEvidenceGrid(model)}
+
+      ${renderChapterIntro(
+        4,
+        "Consistency Vs Conflict",
+        "Where Local Policies Align And Where They Really Diverge",
+        "The HGNS family is the best OSA stress test. On the surface the LCDs look nearly identical. Once structured, the real differences become explicit in wording, provider rules, lifecycle status, and billing articles.",
+      )}
       ${renderCodeAtlas(model)}
       ${renderMacVariation(model)}
-      ${renderHgns(model)}
-      ${renderTimeline(model)}
+
+      ${renderChapterIntro(
+        5,
+        "Automation Layer",
+        "What AI Agents Can Structure Today",
+        "Finally, the tutorial exposes the canonical requirement dictionary and the source ledger. These are the data products that make policy comparison, visualization, and downstream decision support straightforward.",
+      )}
+      ${renderRequirementDictionary(model)}
       ${renderSourceLedger(model)}
 
       <footer class="codex-footer">

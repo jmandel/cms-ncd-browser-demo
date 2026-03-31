@@ -189,6 +189,59 @@ a:hover {
   margin-bottom: 16px;
 }
 
+.chapter-panel {
+  padding: 18px 20px;
+  background:
+    linear-gradient(180deg, rgba(22, 102, 213, 0.05), rgba(22, 102, 213, 0)),
+    var(--paper);
+}
+
+.chapter-topline {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.chapter-step,
+.chapter-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  min-height: 28px;
+  padding: 5px 10px;
+  border-radius: 999px;
+  font-size: 0.73rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.chapter-step {
+  border: 1px solid rgba(22, 102, 213, 0.18);
+  background: rgba(22, 102, 213, 0.08);
+  color: var(--blue);
+}
+
+.chapter-eyebrow {
+  border: 1px solid var(--line);
+  background: var(--paper-2);
+  color: var(--muted);
+}
+
+.chapter-title {
+  margin: 0 0 8px;
+  font-size: clamp(1.45rem, 2vw, 1.95rem);
+  letter-spacing: -0.03em;
+}
+
+.chapter-copy {
+  max-width: 68rem;
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.65;
+}
+
 .section-head.secondary {
   margin-top: 22px;
 }
@@ -216,13 +269,31 @@ a:hover {
   grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
 }
 
+.tutorial-grid {
+  display: grid;
+  gap: 12px;
+}
+
+.tutorial-grid-2 {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.tutorial-grid-3 {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.tutorial-grid-4 {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
 .insight-card,
 .operation-card,
 .rule-layer-card,
 .rule-legend-card,
 .delta-card,
 .requirement-card,
-.doc-rule-card {
+.doc-rule-card,
+.tutorial-card {
   padding: 16px;
 }
 
@@ -240,14 +311,16 @@ a:hover {
 .rule-legend-card,
 .delta-card,
 .requirement-card,
-.doc-rule-card {
+.doc-rule-card,
+.tutorial-card {
   background: linear-gradient(180deg, var(--paper), var(--paper-2));
 }
 
 .rule-layer-card h3,
 .rule-legend-card h3,
 .delta-card h3,
-.doc-rule-card h3 {
+.doc-rule-card h3,
+.tutorial-card h3 {
   margin: 6px 0 8px;
 }
 
@@ -255,11 +328,59 @@ a:hover {
 .rule-legend-card p,
 .delta-card p,
 .doc-rule-card p,
+.tutorial-card p,
 .requirement-definition,
 .requirement-question,
 .doc-rule-focus,
 .lineage-value {
   line-height: 1.58;
+}
+
+.tutorial-card {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+}
+
+.tutorial-card-top {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.tutorial-count {
+  font-size: 1.8rem;
+  font-weight: 800;
+  letter-spacing: -0.04em;
+}
+
+.tutorial-label {
+  color: var(--muted);
+  font-size: 0.74rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  text-align: right;
+}
+
+.tutorial-term {
+  display: inline-flex;
+  align-items: center;
+  min-height: 30px;
+  padding: 5px 10px;
+  border: 1px solid rgba(22, 102, 213, 0.18);
+  border-radius: 999px;
+  background: rgba(22, 102, 213, 0.08);
+  color: var(--blue);
+  font-size: 0.74rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.tutorial-card-glossary .tutorial-label {
+  max-width: 14rem;
 }
 
 .delta-card.is-active,
@@ -1572,6 +1693,9 @@ a:hover {
   }
 
   .hero,
+  .tutorial-grid-2,
+  .tutorial-grid-3,
+  .tutorial-grid-4,
   .focus-grid,
   .focus-meta-grid,
   .focus-metric-grid,
@@ -1599,5 +1723,9 @@ a:hover {
   .masthead,
   .section-head {
     flex-direction: column;
+  }
+
+  .tutorial-label {
+    text-align: left;
   }
 }
