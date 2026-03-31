@@ -27,6 +27,9 @@ async function fetchJson(path) {
   }
   return await response.json();
 }
+async function fetchModel() {
+  return await fetchJson(new URL("../data/model.json", import.meta.url).toString());
+}
 function sourceMap(model) {
   return new Map(model.sourceDocuments.map((source) => [source.id, source]));
 }
@@ -1239,7 +1242,7 @@ function render(model) {
 }
 async function bootstrap() {
   app.innerHTML = `<div class="loading">Loading codex prototype…</div>`;
-  state.model = await fetchJson("/api/model");
+  state.model = await fetchModel();
   render(state.model);
 }
 bootstrap().catch((error) => {

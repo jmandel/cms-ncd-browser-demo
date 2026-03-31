@@ -5,8 +5,8 @@
   "type": "module",
   "description": "Standalone Bun dashboard demo for exploring CMS NCD and LCD coverage logic through a hand-curated OSA metamodel.",
   "scripts": {
-    "build": "bun build src/viewer.ts --outdir public/build --target=browser",
-    "start": "bun run server.ts",
+    "build": "mkdir -p public/data && cp data/obstructive-sleep-apnea.json public/data/model.json && bun build src/viewer.ts --outdir public/build --target=browser",
+    "preview": "bun run server.ts",
     "check": "bun run build"
   }
 }

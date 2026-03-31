@@ -399,6 +399,10 @@ async function fetchJson<T>(path: string): Promise<T> {
   return (await response.json()) as T;
 }
 
+async function fetchModel() {
+  return await fetchJson<PrototypeModel>(new URL("../data/model.json", import.meta.url).toString());
+}
+
 function sourceMap(model: PrototypeModel) {
   return new Map(model.sourceDocuments.map((source) => [source.id, source]));
 }
@@ -1857,7 +1861,7 @@ function render(model: PrototypeModel) {
 
 async function bootstrap() {
   app.innerHTML = `<div class="loading">Loading codex prototype…</div>`;
-  state.model = await fetchJson<PrototypeModel>("/api/model");
+  state.model = await fetchModel();
   render(state.model);
 }
 
