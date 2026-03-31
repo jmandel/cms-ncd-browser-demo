@@ -170,30 +170,25 @@ function basisChip(model, ref) {
   return noteChip(displayLabel, ref.variant, ref.title);
 }
 function renderHero(model) {
-  const hgnsMacCount = model.crossMacComparison?.criteriaMatrix.contractors.length ?? model.hgns.macPolicies.length;
-  const typedTreatmentCount = model.treatmentModels?.length ?? model.policyFamilies.length;
-  const rules = ruleMetamodel(model);
-  const modeledDocs = rules?.coverageAudit?.modeledDocuments ?? list(rules?.documentProfiles).length;
-  const totalDocs = rules?.coverageAudit?.totalCuratedDocuments ?? model.sourceDocuments.length;
   return `
     <section class="hero panel">
       <div class="hero-copy">
-        <div class="eyebrow">Tutorial Prototype</div>
-        <h1>${escapeHtml(model.meta.title)}</h1>
-        <p class="hero-subtitle">This tutorial uses obstructive sleep apnea to show that CMS NCDs, LCDs, companion billing articles, and response records already contain latent structure that can be extracted from public HTML or PDF-like sources and turned into computable policy objects.</p>
-        <p class="hero-note">The OSA dataset here is hand-curated as a demonstration target for AI-assisted extraction: a clinician-friendly view of what the national baseline says, how local contractor policy branches from it, where coding logic becomes operational, and which abstractions are already recoverable today.</p>
+        <div class="eyebrow">Interactive Tutorial</div>
+        <h1>How Medicare Coverage Policy Gets Structured</h1>
+        <p class="hero-subtitle">This tutorial uses obstructive sleep apnea as a concrete example. The goal is to show, in plain language, how national coverage policy, local contractor policy, and billing guidance fit together and how those public documents can be turned into structured data.</p>
+        <p class="hero-note">You do not need prior CMS or billing expertise to read this page. Start with the glossary and the key ideas below, then move into the national baseline, local policy branches, and contractor-level comparison views.</p>
       </div>
 
-      <div class="hero-stats">
-        ${renderStat("Open CMS docs", String(model.sourceDocuments.length), "public NCD/LCD/article records")}
-        ${rules ? renderStat("Modeled docs", `${modeledDocs}/${totalDocs}`, "curated source coverage") : ""}
-        ${rules ? renderStat("Requirements", String(rules.requirementCatalog.length), "canonical policy entities") : ""}
-        ${rules ? renderStat("Rule packs", String(rules.documentProfiles.length), "document-level extracts") : ""}
-        ${renderStat("Policy families", String(model.policyFamilies.length), "OSA treatment branches")}
-        ${renderStat("HGNS MACs", String(hgnsMacCount), "consistency/conflict demo")}
-        ${renderStat("Code atlases", String(model.codeCatalog.families.length), "claim-layer structures")}
-        ${renderStat("Typed treatments", String(typedTreatmentCount), "computed comparison surface")}
-      </div>
+      <aside class="hero-guide">
+        <div class="eyebrow">Start Here</div>
+        <h2>Read this as a guided tour</h2>
+        <div class="typed-list hero-guide-list">
+          <div class="typed-list-item"><strong>First:</strong> learn the small set of CMS terms that matter.</div>
+          <div class="typed-list-item"><strong>Then:</strong> see what the national OSA policy already says before local policy enters the picture.</div>
+          <div class="typed-list-item"><strong>Next:</strong> watch how LCDs reuse, narrow, or replace that baseline for specific therapies.</div>
+          <div class="typed-list-item"><strong>Finally:</strong> see where coding articles and contractor differences become computable.</div>
+        </div>
+      </aside>
     </section>
   `;
 }
@@ -228,32 +223,81 @@ function renderMethodology(model) {
   const articleCount = model.sourceDocuments.filter((source) => source.type === "Article" && !source.title.startsWith("Response to Comments")).length;
   const ncdCount = model.sourceDocuments.filter((source) => source.type === "NCD").length;
   const lcdCount = model.sourceDocuments.filter((source) => source.type === "LCD").length;
+  const modeledDocs = rules.coverageAudit?.modeledDocuments ?? rules.documentProfiles.length;
+  const totalDocs = rules.coverageAudit?.totalCuratedDocuments ?? model.sourceDocuments.length;
   return `
     <section class="panel">
       <div class="section-head">
         <div>
-          <div class="eyebrow">What This Demo Is</div>
-          <h2>Manual Curation As A Target State For Automation</h2>
+          <div class="eyebrow">What Was Curated</div>
+          <h2>This Tutorial Demonstrates A Target Shape For Automation</h2>
           <p class="section-copy">The point is not that OSA should be hand-entered forever. The point is that public CMS documents already expose enough regularity for AI agents to recover high-value structure: indications, thresholds, exclusions, provider roles, coding layers, document lineage, and policy lifecycle context.</p>
         </div>
       </div>
 
+      <div class="hero-stats tutorial-stats">
+        ${renderStat("CMS docs reviewed", String(totalDocs), "public source records in scope")}
+        ${renderStat("Docs modeled", `${modeledDocs}/${totalDocs}`, "documents decomposed into rule packs")}
+        ${renderStat("Requirement entities", String(rules.requirementCatalog.length), "canonical reusable policy concepts")}
+        ${renderStat("Rule packs", String(rules.documentProfiles.length), "structured document extracts")}
+      </div>
+
       <div class="tutorial-grid tutorial-grid-3">
         <article class="tutorial-card">
-          <div class="eyebrow">Open Source In</div>
-          <h3>Raw CMS Material</h3>
+          <div class="eyebrow">Source Material</div>
+          <h3>What Was Reviewed</h3>
           <p>${sourceCount} public CMS records were reviewed: ${ncdCount} NCDs, ${lcdCount} LCDs, ${articleCount} companion articles, and ${responseCount} response-to-comments records. This is the public policy stack a clinician or informaticist can already inspect today.</p>
         </article>
         <article class="tutorial-card">
-          <div class="eyebrow">Structured Here</div>
-          <h3>Computable Policy Objects</h3>
+          <div class="eyebrow">Structured Output</div>
+          <h3>What The Tutorial Makes Computable</h3>
           <p>${rules.requirementCatalog.length} canonical requirements and ${rules.documentProfiles.length} document rule packs now let the app compare OSA policies without reading each document side by side by hand.</p>
         </article>
         <article class="tutorial-card">
-          <div class="eyebrow">Automatable Today</div>
-          <h3>AI-Assistable Workflow</h3>
+          <div class="eyebrow">Automation Potential</div>
+          <h3>What AI Agents Can Help Extract Today</h3>
           <p>Good extraction today can recover thresholds, exclusions, provider roles, code tables, related-document topology, and cross-document deltas. Manual review is still useful where wording conflicts, legacy variants, or revision histories need adjudication.</p>
         </article>
+      </div>
+    </section>
+  `;
+}
+function renderTutorialOrientation() {
+  const ideas = [
+    {
+      eyebrow: "Key Idea 1",
+      title: "One disease can have multiple policy layers",
+      body: "OSA is not governed by one document. National policy defines a baseline, while local contractor policies add therapy-specific branches, workflow gates, and exclusions."
+    },
+    {
+      eyebrow: "Key Idea 2",
+      title: "Different CMS pages do different jobs",
+      body: "Some pages define clinical coverage, some operationalize it, and some translate it into billing and coding instructions. The tutorial separates those roles instead of blending them together."
+    },
+    {
+      eyebrow: "Key Idea 3",
+      title: "Structure is what makes comparison easy",
+      body: "Once thresholds, exclusions, provider requirements, and code tables are normalized into the same vocabulary, differences stop being something you hunt for by eye."
+    }
+  ];
+  return `
+    <section class="panel">
+      <div class="section-head">
+        <div>
+          <div class="eyebrow">Before The Details</div>
+          <h2>Three Ideas To Keep In Mind</h2>
+          <p class="section-copy">This page is meant to teach a way of seeing policy structure. These three ideas are the mental model for everything that follows.</p>
+        </div>
+      </div>
+
+      <div class="tutorial-grid tutorial-grid-3">
+        ${ideas.map((idea) => `
+              <article class="tutorial-card">
+                <div class="eyebrow">${escapeHtml(idea.eyebrow)}</div>
+                <h3>${escapeHtml(idea.title)}</h3>
+                <p>${escapeHtml(idea.body)}</p>
+              </article>
+            `).join("")}
       </div>
     </section>
   `;
@@ -1495,16 +1539,17 @@ function render(model) {
     <div class="codex-shell">
       <header class="masthead">
         <div>
-          <div class="eyebrow">Hand-Curated OSA Tutorial</div>
-          <div class="masthead-title">${escapeHtml(model.meta.title)}</div>
+          <div class="eyebrow">Hand-Curated Tutorial</div>
+          <div class="masthead-title">CMS Coverage Structure Through Obstructive Sleep Apnea</div>
         </div>
         <div class="masthead-note">Reviewed ${escapeHtml(formatDate(model.meta.reviewedOn))}</div>
       </header>
 
       ${renderHero(model)}
-      ${renderChapterIntro(1, "Open CMS Material", "What Latent Structure Already Exists?", "Start with the raw public record types and the semantic layers we can recover from them. OSA is the lens, but the lesson is about the underlying structure of CMS policy documents.")}
-      ${renderMethodology(model)}
+      ${renderTutorialOrientation()}
       ${renderCmsGlossary()}
+      ${renderChapterIntro(1, "Public Policy Material", "What Structure Is Already Present In The Source Documents?", "Only after the orientation do we pivot to the source material itself. OSA is the lens, but the lesson is about the underlying structure already present in CMS policy documents.")}
+      ${renderMethodology(model)}
       ${renderSourceLandscape(model)}
       ${renderRuleSemantics(model)}
 

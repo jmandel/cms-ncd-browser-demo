@@ -154,10 +154,35 @@ a:hover {
   line-height: 1.65;
 }
 
+.hero-guide {
+  display: grid;
+  align-content: start;
+  gap: 12px;
+  padding: 18px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: linear-gradient(180deg, var(--paper), var(--paper-2));
+}
+
+.hero-guide h2 {
+  margin: 0;
+  font-size: 1.2rem;
+  letter-spacing: -0.02em;
+}
+
+.hero-guide-list {
+  margin-top: 4px;
+}
+
 .hero-stats {
   display: grid;
   gap: 10px;
   grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.tutorial-stats {
+  margin-bottom: 16px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
 }
 
 .stat-card {
