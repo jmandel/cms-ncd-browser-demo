@@ -311,6 +311,7 @@ interface PerMacCodeTables {
 
 interface CrossMacComparison {
   description: string;
+  verdictSummary?: string;
   criteriaMatrix: {
     contractors: Array<{ id: string; name: string; lcd: string; region: string }>;
     criteria: Array<{ id: string; label: string; values: Record<string, boolean> }>;
@@ -319,6 +320,13 @@ interface CrossMacComparison {
     description: string;
     macBmiMaxCode: Record<string, string>;
   };
+  realDifferences?: Array<{
+    category: string;
+    severity: string;
+    description: string;
+    affectedMacs: string[];
+    detail: string;
+  }>;
 }
 
 interface PolicyTimelineEvent {
@@ -562,11 +570,18 @@ interface BasisRef {
 }
 
 function basisChip(model: PrototypeModel, ref: BasisRef) {
+  const displayLabel =
+    ref.variant === "ncd" && !ref.label.startsWith("NCD ")
+      ? `NCD ${ref.label}`
+      : ref.variant === "lcd" && !ref.label.startsWith("LCD ")
+        ? `LCD ${ref.label}`
+        : ref.label;
+
   if (ref.displayId) {
-    return docChip(model, ref.displayId, ref.label, ref.variant, ref.title);
+    return docChip(model, ref.displayId, displayLabel, ref.variant, ref.title);
   }
 
-  return noteChip(ref.label, ref.variant, ref.title);
+  return noteChip(displayLabel, ref.variant, ref.title);
 }
 
 function selectedFirst<T extends { familyId: string }>(items: T[]) {
@@ -851,6 +866,11 @@ function renderEligibilityLandscape(model: PrototypeModel) {
         ${basisChip(model, { label: "Mixed basis", variant: "neutral", title: "Some cells combine a national floor with local operational narrowing." })}
       </div>
 
+      <div class="eligibility-basis-note">
+        <strong>How to read the source pills</strong>
+        <span>Pills are source attribution, not extra criteria. NCD pills mean the value comes from the national floor. LCD pills mean the value is defined or operationalized at the local policy layer. If both appear in one cell, the displayed rule is synthesized from both layers.</span>
+      </div>
+
       <div class="range-ladder">
         ${treatments
           .map((treatment) => {
@@ -996,6 +1016,7 @@ function renderMacVariation(model: PrototypeModel) {
   const criteria = comparison.criteriaMatrix.criteria;
   const currentFamilyIsHgns = state.selectedFamilyId === "hgns";
   const codeRows = list(macTables.hgns);
+  const realDifferences = list(comparison.realDifferences);
   const articleByMac = new Map(codeRows.map((row) => [row.mac, row]));
   const contractorKeyFromArticle = (displayId: string) => {
     if (displayId === "A57949") {
@@ -1139,6 +1160,10 @@ function renderMacVariation(model: PrototypeModel) {
     },
   ];
 
+  const literalClinicalDiffCount = realDifferences.filter((item) => item.category.startsWith("LCD:")).length;
+  const billingDiffCount = realDifferences.filter((item) => item.category.startsWith("Billing:")).length;
+  const structureDiffCount = realDifferences.filter((item) => item.category.startsWith("LCD Structure")).length;
+
   return `
     <section class="panel panel-hgns-variation">
       <div class="section-head">
@@ -1153,6 +1178,15 @@ function renderMacVariation(model: PrototypeModel) {
         ${noteChip(`${criteria.length} clinical criteria`, "neutral")}
         ${noteChip(`${contractors.length} contractor variants`, "neutral")}
         ${noteChip(`${comparison.bmiCodeVariation ? Object.keys(comparison.bmiCodeVariation.macBmiMaxCode).length : 0} BMI code lanes`, "neutral")}
+        ${realDifferences.length ? noteChip(`${realDifferences.length} material differences captured`, "amber", "The normalized checkmark grid is aligned, but the integrated model still captures real cross-MAC differences.") : ""}
+        ${literalClinicalDiffCount ? noteChip(`${literalClinicalDiffCount} literal clinical criterion variant`, "rose", "At least one LCD uses materially different wording or a different measurement window even though the normalized core remains aligned.") : ""}
+        ${billingDiffCount ? noteChip(`${billingDiffCount} billing / coding differences`, "blue") : ""}
+        ${structureDiffCount ? noteChip(`${structureDiffCount} structure / wording differences`, "neutral") : ""}
+      </div>
+
+      <div class="variation-summary-callout">
+        <strong>${escapeHtml(comparison.verdictSummary ?? "Clinical-core presence is aligned, but the integrated model still captures real contractor variation.")}</strong>
+        <span>The checkmarks below answer only whether each normalized core requirement is present in a contractor LCD. They do not encode wording changes, measurement-window changes, or billing-article differences.</span>
       </div>
 
       <div class="matrix-wrap">
@@ -1190,6 +1224,48 @@ function renderMacVariation(model: PrototypeModel) {
           </tbody>
         </table>
       </div>
+
+      ${
+        realDifferences.length
+          ? `
+            <div class="matrix-wrap difference-ledger">
+              <table class="matrix-table">
+                <thead>
+                  <tr>
+                    <th>Material difference captured</th>
+                    <th>Severity</th>
+                    <th>Affected MACs</th>
+                    <th>What differs</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${realDifferences
+                    .map(
+                      (difference) => `
+                        <tr>
+                          <td>
+                            <div class="variation-label">${escapeHtml(difference.category)}</div>
+                          </td>
+                          <td><span class="value-pill is-${difference.severity === "high" ? "rose" : difference.severity === "medium" ? "amber" : "muted"}">${escapeHtml(difference.severity)}</span></td>
+                          <td>
+                            <div class="difference-mac-list">
+                              ${difference.affectedMacs.map((item) => `<span class="mini-doc-chip is-neutral">${escapeHtml(item)}</span>`).join("")}
+                            </div>
+                          </td>
+                          <td>
+                            <div class="variation-label">${escapeHtml(difference.description)}</div>
+                            <div class="variation-note">${escapeHtml(difference.detail)}</div>
+                          </td>
+                        </tr>
+                      `,
+                    )
+                    .join("")}
+                </tbody>
+              </table>
+            </div>
+          `
+          : ""
+      }
 
       <div class="matrix-wrap variation-matrix">
         <table class="matrix-table">
