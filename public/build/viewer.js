@@ -176,7 +176,7 @@ function renderHero(model) {
         <div class="eyebrow">Interactive Tutorial</div>
         <h1>How Medicare Coverage Policy Gets Structured</h1>
         <p class="hero-subtitle">This tutorial uses obstructive sleep apnea (OSA) as a concrete example. The goal is to show, in plain language, how national coverage policy, local contractor policy, and billing guidance fit together and how those public documents can be turned into structured data.</p>
-        <p class="hero-note">You do not need prior CMS or billing expertise to read this page. Start with the glossary and the key ideas below, then move into the national baseline, local policy branches, and contractor-level comparison views.</p>
+        <p class="hero-note">You do not need prior CMS or billing expertise to read this page. Start with the glossary and the key ideas below, then move into the national baseline, local treatment paths, and contractor-level comparison views.</p>
       </div>
 
       <aside class="hero-guide">
@@ -267,7 +267,7 @@ function renderTutorialOrientation() {
     {
       eyebrow: "Key Idea 1",
       title: "One disease can have multiple policy layers",
-      body: "OSA is not governed by one document. National policy defines a baseline, while local contractor policies add therapy-specific branches, workflow gates, and exclusions."
+      body: "OSA is not governed by one document. National policy defines a baseline, while local contractor policies add therapy-specific treatment paths, workflow gates, and exclusions."
     },
     {
       eyebrow: "Key Idea 2",
@@ -314,7 +314,7 @@ function renderCmsGlossary() {
     {
       term: "LCD",
       role: "Local contractor coverage rule",
-      detail: "A Local Coverage Determination is written by a Medicare Administrative Contractor, or MAC. LCDs can reuse the NCD, narrow it, operationalize it, or create a therapy-specific branch.",
+      detail: "A Local Coverage Determination is written by a Medicare Administrative Contractor, or MAC. LCDs can reuse the NCD, narrow it, operationalize it, or create a therapy-specific treatment path.",
       band: "Local overlay",
       tone: "lcd"
     },
@@ -328,7 +328,7 @@ function renderCmsGlossary() {
     {
       term: "Response record",
       role: "Revision and governance context",
-      detail: "Response-to-comments documents explain why a policy changed, which objections were answered, and whether a branch is current, retired, or consolidated into another LCD.",
+      detail: "Response-to-comments documents explain why a policy changed, which objections were answered, and whether a treatment path is current, retired, or consolidated into another LCD.",
       band: "Change history",
       tone: "response"
     }
@@ -381,7 +381,7 @@ function renderSourceLandscape(model) {
     {
       label: "LCDs",
       count: model.sourceDocuments.filter((source) => source.type === "LCD").length,
-      body: "Local documents narrow, operationalize, or create therapy-specific branches on top of that floor.",
+      body: "Local documents narrow, operationalize, or create therapy-specific treatment paths on top of that floor.",
       examples: ["L33718", "L33611", "L34526", "L38310"]
     },
     {
@@ -466,10 +466,10 @@ function renderSourceLandscape(model) {
 
       <div class="tutorial-grid tutorial-grid-4">
         ${docGroups.map((group) => `
-              <article class="tutorial-card">
-                <div class="tutorial-card-top">
-                  <span class="tutorial-count">${group.count}</span>
-                  <span class="tutorial-label">${escapeHtml(group.label)}</span>
+              <article class="tutorial-card count-card">
+                <div class="count-card-head">
+                  <h3>${escapeHtml(group.label)}</h3>
+                  <span class="count-pill">${group.count} in scope</span>
                 </div>
                 <p>${escapeHtml(group.body)}</p>
                 <div class="delta-counts">${group.examples.map((example) => noteChip(example, "neutral")).join("")}</div>
@@ -482,10 +482,10 @@ function renderSourceLandscape(model) {
     const count = rules.requirementCatalog.filter((item) => item.groupId === group.id).length;
     const exampleEntry = rules.requirementCatalog.find((item) => item.groupId === group.id);
     return `
-              <article class="tutorial-card">
-                <div class="tutorial-card-top">
-                  <span class="tutorial-count">${count}</span>
-                  <span class="tutorial-label">${escapeHtml(group.label)}</span>
+              <article class="tutorial-card count-card">
+                <div class="count-card-head">
+                  <h3>${escapeHtml(group.label)}</h3>
+                  <span class="count-pill">${count} extracted</span>
                 </div>
                 <p>${escapeHtml(group.description)}</p>
                 ${exampleEntry ? `<div class="delta-counts">${noteChip(`Example: ${exampleEntry.shortLabel}`, "neutral")}</div>` : ""}
@@ -553,7 +553,7 @@ function renderNcdTutorial(model) {
         <div>
           <div class="eyebrow">National Layer</div>
           <h2>What The NCDs Already Contain</h2>
-          <p class="section-copy">Before comparing local policy, the tutorial extracts the national baseline. In OSA, the two key NCDs already encode a real decision grammar: valid sleep-test modalities, severity thresholds, mild-disease branches, and the initial CPAP trial concept.</p>
+          <p class="section-copy">The source NCDs are plain-language CMS documents, not pre-structured data. This section shows what the tutorial extracted from those documents: accepted sleep-test types, severity thresholds, mild-disease exceptions, and the initial CPAP trial concept.</p>
         </div>
       </div>
 
@@ -570,7 +570,7 @@ function renderFamilyRail(model) {
         <div>
           <div class="eyebrow">Downstream Branches</div>
           <h2>Choose A Therapy Lens</h2>
-          <p class="section-copy">After the NCD baseline, every downstream treatment branch changes the logic differently. Select a branch and the next sections will show how local policy reuses, narrows, operationalizes, or replaces the national layer.</p>
+          <p class="section-copy">After the NCD baseline, each downstream treatment path changes the logic differently. Select a treatment path and the next sections will show how local policy reuses, narrows, operationalizes, or replaces the national layer.</p>
         </div>
       </div>
 
@@ -667,7 +667,7 @@ function renderFamilyFocus(model) {
           <div class="focus-meta-grid">
             <div class="focus-meta-card">
               <span>Layer model</span>
-              <strong>${layering ? "Explicit baseline + local change" : "Shared branch only"}</strong>
+              <strong>${layering ? "Explicit baseline + local change" : "Shared path only"}</strong>
             </div>
             <div class="focus-meta-card">
               <span>Code atlas</span>
@@ -699,8 +699,8 @@ function renderRuleSemantics(model) {
       <div class="worked-example">
         <div class="section-head secondary">
           <div>
-            <h3>Worked Example: CPAP Continuation</h3>
-            <p class="section-copy">This is what the abstraction is doing. Start with one concrete policy relationship: the national CPAP rule creates a trial period, and the local PAP LCD turns that broad concept into measurable continuation rules.</p>
+            <h3>Worked Example: Keeping PAP Coverage After The Trial</h3>
+            <p class="section-copy">This is what the abstraction is doing. Start with one concrete policy relationship: the national CPAP rule creates an initial trial period, and the local PAP LCD turns the question of keeping coverage after that trial into measurable adherence and follow-up rules.</p>
           </div>
         </div>
 
@@ -756,7 +756,7 @@ function renderRuleSemantics(model) {
       <div class="section-head secondary">
         <div>
           <h3>How Each Treatment Branch Changes The National Baseline</h3>
-          <p class="section-copy">Here, a branch means one downstream therapy lane such as PAP, oral appliance, surgery, or HGNS. Each card summarizes whether that branch mostly reuses the national rule, narrows it, operationalizes it, or adds genuinely new local logic.</p>
+          <p class="section-copy">Here, a treatment path means one downstream therapy lane such as PAP, oral appliance, surgery, or HGNS. Each card summarizes whether that path mostly reuses the national rule, narrows it, operationalizes it, or adds genuinely new local logic.</p>
         </div>
       </div>
 
@@ -894,7 +894,7 @@ function renderFamilyLineage(model) {
         <div>
           <div class="eyebrow">Comparative Surface</div>
           <h2>Requirement Lineage Matrix</h2>
-          <p class="section-copy">Rows are canonical requirements. Columns are treatment branches. Each cell says whether that branch reuses the national rule, narrows it, operationalizes it, or introduces genuinely different local logic.</p>
+          <p class="section-copy">Rows are canonical requirements. Columns are treatment paths. Each cell says whether that path reuses the national rule, narrows it, operationalizes it, or introduces genuinely different local logic.</p>
         </div>
       </div>
 
@@ -971,7 +971,7 @@ function renderSelectedFamilyRuleLedger(model) {
         <div>
           <div class="eyebrow">Document Rule Packs</div>
           <h2>${escapeHtml(selectedFamily.label)} Rule Ledger</h2>
-          <p class="section-copy">The selected branch now resolves to structured document packs. Each card shows which canonical requirements the document touches and whether it is baseline, narrowing, operationalization, a new therapy branch, or a coding article.</p>
+          <p class="section-copy">The selected treatment path now resolves to structured document packs. Each card shows which canonical requirements the document touches and whether it is baseline, narrowing, operationalization, a new therapy rule, or a coding article.</p>
         </div>
       </div>
 
@@ -1042,7 +1042,7 @@ function renderEligibilityLandscape(model) {
       return [
         { min: 5, max: 14, label: "Mild + comorbidities", color: "var(--amber)" },
         { min: 15, max: 30, label: "Moderate", color: "var(--teal)" },
-        { min: 30, max: maxAhi, label: "Severe + PAP branch", color: "var(--plum)" }
+        { min: 30, max: maxAhi, label: "Severe + PAP failure", color: "var(--plum)" }
       ];
     }
     if (treatment.id === "surgery") {
@@ -1062,14 +1062,14 @@ function renderEligibilityLandscape(model) {
         <div>
           <div class="eyebrow">Typed Comparison</div>
           <h2>Eligibility Landscape</h2>
-          <p class="section-copy">Integrated treatment thresholds, prerequisites, and coverage gates derived from the richer typed model. The current branch stays highlighted so the disease browser and comparison view remain connected.</p>
+          <p class="section-copy">Integrated treatment thresholds, prerequisites, and coverage gates derived from the richer typed model. The current treatment path stays highlighted so the disease browser and comparison view remain connected.</p>
         </div>
       </div>
 
       <div class="comparison-chips">
         ${basisChip(model, { label: "NCD 240.4", variant: "ncd", displayId: "240.4", title: "National CPAP baseline" })}
         ${basisChip(model, { label: "LCD L33718", variant: "lcd", displayId: "L33718", title: "PAP Devices LCD" })}
-        ${basisChip(model, { label: "HGNS LCD branch", variant: "group", title: hgnsFamilyTitle })}
+        ${basisChip(model, { label: "HGNS LCD set", variant: "group", title: hgnsFamilyTitle })}
         ${basisChip(model, { label: "Mixed basis", variant: "neutral", title: "Some cells combine a national floor with local operational narrowing." })}
       </div>
 
@@ -1122,35 +1122,35 @@ function renderEligibilityLandscape(model) {
             <tr>
               <td>Minimum AHI</td>
               ${cell("cpap", "5", [{ label: "240.4", variant: "ncd", displayId: "240.4", title: "AHI 5-14 branch requires symptoms or comorbidities." }])}
-              ${cell("hgns", "15", [{ label: "HGNS branch", variant: "group", title: hgnsFamilyTitle }])}
+              ${cell("hgns", "15", [{ label: "HGNS LCD set", variant: "group", title: hgnsFamilyTitle }])}
               ${cell("oral-appliance", "5", [{ label: "L33611", variant: "lcd", displayId: "L33611", title: "Oral Appliances for Obstructive Sleep Apnea" }])}
               ${cell("surgery", "15 (RDI)", [{ label: "L34526", variant: "lcd", displayId: "L34526", title: "Surgical Treatment of OSA" }])}
             </tr>
             <tr>
               <td>Maximum AHI</td>
               ${cell("cpap", "None", [{ label: "240.4", variant: "ncd", displayId: "240.4", title: "No upper AHI ceiling in the CPAP NCD." }])}
-              ${cell("hgns", "65", [{ label: "HGNS branch", variant: "group", title: hgnsFamilyTitle }])}
+              ${cell("hgns", "65", [{ label: "HGNS LCD set", variant: "group", title: hgnsFamilyTitle }])}
               ${cell("oral-appliance", "None", [{ label: "L33611", variant: "lcd", displayId: "L33611", title: "No explicit upper AHI ceiling; severe disease branches on PAP status." }])}
               ${cell("surgery", "None", [{ label: "L34526", variant: "lcd", displayId: "L34526", title: "No explicit upper RDI ceiling in the surgery LCD." }])}
             </tr>
             <tr>
               <td>Minimum age</td>
               ${cell("cpap", "Adult", [{ label: "240.4", variant: "ncd", displayId: "240.4", title: "The CPAP NCD addresses adult OSA." }])}
-              ${cell("hgns", "22", [{ label: "HGNS branch", variant: "group", title: hgnsFamilyTitle }])}
+              ${cell("hgns", "22", [{ label: "HGNS LCD set", variant: "group", title: hgnsFamilyTitle }])}
               ${cell("oral-appliance", "Not fixed", [{ label: "L33611", variant: "lcd", displayId: "L33611" }])}
               ${cell("surgery", "Not fixed", [{ label: "L34526", variant: "lcd", displayId: "L34526" }])}
             </tr>
             <tr>
               <td>Maximum BMI</td>
               ${cell("cpap", "No ceiling", [{ label: "240.4", variant: "ncd", displayId: "240.4", title: "No CPAP BMI ceiling in the NCD." }])}
-              ${cell("hgns", "< 35", [{ label: "HGNS branch", variant: "group", title: hgnsFamilyTitle }])}
+              ${cell("hgns", "< 35", [{ label: "HGNS LCD set", variant: "group", title: hgnsFamilyTitle }])}
               ${cell("oral-appliance", "No ceiling", [{ label: "L33611", variant: "lcd", displayId: "L33611" }])}
               ${cell("surgery", "No ceiling", [{ label: "L34526", variant: "lcd", displayId: "L34526" }])}
             </tr>
             <tr>
               <td>CPAP failure required</td>
               ${cell("cpap", "N/A first-line", [{ label: "240.4", variant: "ncd", displayId: "240.4", title: "CPAP is itself the national first-line therapy." }])}
-              ${cell("hgns", "Required", [{ label: "HGNS branch", variant: "group", title: hgnsFamilyTitle }])}
+              ${cell("hgns", "Required", [{ label: "HGNS LCD set", variant: "group", title: hgnsFamilyTitle }])}
               ${cell("oral-appliance", "Conditional", [{ label: "L33611", variant: "lcd", displayId: "L33611", title: "Required only for the severe AHI branch or contraindication path." }])}
               ${cell("surgery", "Required", [{ label: "L34526", variant: "lcd", displayId: "L34526" }])}
             </tr>
@@ -1160,7 +1160,7 @@ function renderEligibilityLandscape(model) {
     { label: "240.4.1", variant: "ncd", displayId: "240.4.1", title: "National sleep-testing floor" },
     { label: "240.4", variant: "ncd", displayId: "240.4", title: "CPAP qualification uses those covered testing pathways." }
   ])}
-              ${cell("hgns", "PSG within 24 months", [{ label: "HGNS branch", variant: "group", title: hgnsFamilyTitle }])}
+              ${cell("hgns", "PSG within 24 months", [{ label: "HGNS LCD set", variant: "group", title: hgnsFamilyTitle }])}
               ${cell("oral-appliance", "Medicare-covered sleep test", [{ label: "L33611", variant: "lcd", displayId: "L33611" }])}
               ${cell("surgery", "AASM-certified lab", [{ label: "L34526", variant: "lcd", displayId: "L34526" }])}
             </tr>
@@ -1170,28 +1170,28 @@ function renderEligibilityLandscape(model) {
     { label: "240.4", variant: "ncd", displayId: "240.4", title: "National 12-week trial period." },
     { label: "L33718", variant: "lcd", displayId: "L33718", title: "Operationalized as a 90-day adherence window." }
   ])}
-              ${cell("hgns", "None", [{ label: "HGNS branch", variant: "group", title: hgnsFamilyTitle }])}
+              ${cell("hgns", "None", [{ label: "HGNS LCD set", variant: "group", title: hgnsFamilyTitle }])}
               ${cell("oral-appliance", "None", [{ label: "L33611", variant: "lcd", displayId: "L33611" }])}
               ${cell("surgery", "None", [{ label: "L34526", variant: "lcd", displayId: "L34526" }])}
             </tr>
             <tr>
               <td>Adherence monitoring</td>
               ${cell("cpap", ">=4h/night, 70%", [{ label: "L33718", variant: "lcd", displayId: "L33718", title: "Objective adherence rule from the PAP LCD." }])}
-              ${cell("hgns", "N/A", [{ label: "HGNS branch", variant: "group", title: hgnsFamilyTitle }])}
+              ${cell("hgns", "N/A", [{ label: "HGNS LCD set", variant: "group", title: hgnsFamilyTitle }])}
               ${cell("oral-appliance", "N/A", [{ label: "L33611", variant: "lcd", displayId: "L33611" }])}
               ${cell("surgery", "N/A", [{ label: "L34526", variant: "lcd", displayId: "L34526" }])}
             </tr>
             <tr>
               <td>Anatomy assessment</td>
               ${cell("cpap", "Not primary", [{ label: "240.4", variant: "ncd", displayId: "240.4" }])}
-              ${cell("hgns", "DISE required", [{ label: "HGNS branch", variant: "group", title: hgnsFamilyTitle }])}
+              ${cell("hgns", "DISE required", [{ label: "HGNS LCD set", variant: "group", title: hgnsFamilyTitle }])}
               ${cell("oral-appliance", "Not primary", [{ label: "L33611", variant: "lcd", displayId: "L33611" }])}
               ${cell("surgery", "Obstruction site required", [{ label: "L34526", variant: "lcd", displayId: "L34526" }])}
             </tr>
             <tr>
               <td>Specialist requirement</td>
               ${cell("cpap", "Treating practitioner", [{ label: "240.4", variant: "ncd", displayId: "240.4" }])}
-              ${cell("hgns", "Otolaryngologist + sleep physician", [{ label: "HGNS branch", variant: "group", title: hgnsFamilyTitle }])}
+              ${cell("hgns", "Otolaryngologist + sleep physician", [{ label: "HGNS LCD set", variant: "group", title: hgnsFamilyTitle }])}
               ${cell("oral-appliance", "Licensed dentist", [{ label: "L33611", variant: "lcd", displayId: "L33611" }])}
               ${cell("surgery", "Qualified surgeon", [{ label: "L34526", variant: "lcd", displayId: "L34526" }])}
             </tr>
