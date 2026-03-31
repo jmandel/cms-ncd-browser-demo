@@ -342,6 +342,122 @@ interface CodeInventory {
   diagnostic: Array<{ code: string; system: string; description: string; role: string }>;
 }
 
+interface RuleLayer {
+  id: string;
+  label: string;
+  description: string;
+}
+
+interface RuleRelationLegendItem {
+  id: string;
+  label: string;
+  meaning: string;
+  tone: string;
+}
+
+interface RuleRequirementGroup {
+  id: string;
+  label: string;
+  description: string;
+}
+
+interface RuleRequirementEntry {
+  id: string;
+  groupId: string;
+  label: string;
+  shortLabel: string;
+  valueType: string;
+  definition: string;
+  canonicalQuestion: string;
+  typicalEvidence: string[];
+  relatedVariableIds: string[];
+  usedByFamilies: string[];
+}
+
+interface RuleStatement {
+  requirementId: string;
+  relation: string;
+  polarity: string;
+  valueSummary: string;
+  significance: string;
+  note?: string;
+  structuredValue?: Record<string, string | number | boolean | null>;
+}
+
+interface RuleDocumentProfile {
+  documentId: string;
+  displayId: string;
+  title: string;
+  type: string;
+  familyId: string;
+  familyLabel: string;
+  scopeLevel: string;
+  roleInPathway: string;
+  focus: string;
+  baselineDocumentIds: string[];
+  statements: RuleStatement[];
+}
+
+interface FamilyDeltaSummary {
+  familyId: string;
+  baselineDocumentIds: string[];
+  localDocumentIds: string[];
+  counts: Record<string, number>;
+  takeaway: string;
+}
+
+interface LineageCell {
+  familyId: string;
+  relation: string;
+  valueSummary: string;
+  sourceDocumentIds: string[];
+}
+
+interface LineageRow {
+  requirementId: string;
+  whyItMatters: string;
+  cells: LineageCell[];
+}
+
+interface ContractorVarianceValue {
+  contractorId: string;
+  relation: string;
+  valueSummary: string;
+  sourceDocumentId: string;
+}
+
+interface ContractorVarianceRow {
+  requirementId: string;
+  label: string;
+  dimensionId: string;
+  takeaway: string;
+  contractorValues: ContractorVarianceValue[];
+}
+
+interface RuleMetamodel {
+  abstractionLayers: RuleLayer[];
+  relationLegend: RuleRelationLegendItem[];
+  requirementGroups: RuleRequirementGroup[];
+  requirementCatalog: RuleRequirementEntry[];
+  documentProfiles: RuleDocumentProfile[];
+  familyDeltaSummaries: FamilyDeltaSummary[];
+  familyLineage: {
+    columns: Array<{ familyId: string; label: string }>;
+    rows: LineageRow[];
+  };
+  contractorVariance: {
+    familyId: string;
+    dimensions: Array<{ id: string; label: string }>;
+    rows: ContractorVarianceRow[];
+  };
+  analyticQuestions: Array<{
+    id: string;
+    prompt: string;
+    answer: string;
+    viewIds: string[];
+  }>;
+}
+
 interface PrototypeModel {
   meta: ModelMeta;
   sourceDocuments: SourceDocument[];
@@ -360,6 +476,7 @@ interface PrototypeModel {
   crossMacComparison?: CrossMacComparison;
   policyTimeline?: PolicyTimelineEvent[];
   codeInventory?: CodeInventory;
+  ruleMetamodel?: RuleMetamodel;
 }
 
 interface AppState {
@@ -433,6 +550,22 @@ function layeringMap(model: PrototypeModel) {
 
 function codeCatalogMap(model: PrototypeModel) {
   return new Map(model.codeCatalog.families.map((item) => [item.familyId, item]));
+}
+
+function ruleMetamodel(model: PrototypeModel) {
+  return model.ruleMetamodel ?? null;
+}
+
+function requirementMap(model: PrototypeModel) {
+  return new Map(list(ruleMetamodel(model)?.requirementCatalog).map((item) => [item.id, item]));
+}
+
+function groupMap(model: PrototypeModel) {
+  return new Map(list(ruleMetamodel(model)?.requirementGroups).map((item) => [item.id, item]));
+}
+
+function familyDeltaMap(model: PrototypeModel) {
+  return new Map(list(ruleMetamodel(model)?.familyDeltaSummaries).map((item) => [item.familyId, item]));
 }
 
 function treatmentIdForFamilyId(familyId: string) {
@@ -562,6 +695,21 @@ function noteChip(label: string, variant = "neutral", title?: string) {
   return `<span class="mini-doc-chip is-${variant}"${title ? ` title="${escapeHtml(title)}"` : ""}>${escapeHtml(label)}</span>`;
 }
 
+function relationVariant(relation: string) {
+  if (relation === "baseline") return "neutral";
+  if (relation === "reuses") return "teal";
+  if (relation === "narrows") return "amber";
+  if (relation === "operationalizes") return "blue";
+  if (relation === "adds") return "plum";
+  if (relation === "differs") return "rose";
+  if (relation === "codes") return "ink";
+  return "neutral";
+}
+
+function relationChip(label: string, relation: string, title?: string) {
+  return noteChip(label, relationVariant(relation), title);
+}
+
 interface BasisRef {
   label: string;
   variant: string;
@@ -595,6 +743,7 @@ function selectedFirst<T extends { familyId: string }>(items: T[]) {
 function renderHero(model: PrototypeModel) {
   const hgnsMacCount = model.crossMacComparison?.criteriaMatrix.contractors.length ?? model.hgns.macPolicies.length;
   const typedTreatmentCount = model.treatmentModels?.length ?? model.policyFamilies.length;
+  const rules = ruleMetamodel(model);
 
   return `
     <section class="hero panel">
@@ -609,9 +758,11 @@ function renderHero(model: PrototypeModel) {
         ${renderStat("Policy families", String(model.policyFamilies.length), "normalized lanes")}
         ${renderStat("Layer views", String(model.layeringModels.length), "baseline versus local delta")}
         ${renderStat("Evidence vars", String(model.evidenceVariables.length), "reusable data elements")}
+        ${rules ? renderStat("Requirements", String(rules.requirementCatalog.length), "canonical rule entities") : ""}
         ${renderStat("Code atlases", String(model.codeCatalog.families.length), "family-specific structured tables")}
         ${renderStat("Typed treatments", String(typedTreatmentCount), "integrated comparison surface")}
         ${renderStat("HGNS MACs", String(hgnsMacCount), "active plus legacy contractor variants")}
+        ${rules ? renderStat("Rule packs", String(rules.documentProfiles.length), "document-level structured extracts") : ""}
         ${renderStat("Sources", String(model.sourceDocuments.length), "integrated reviewed documents")}
       </div>
     </section>
@@ -798,6 +949,379 @@ function renderFamilyFocus(model: PrototypeModel) {
           </div>
           <div class="source-row">${sourceLinks(model, family.sourceIds)}</div>
         </div>
+      </div>
+    </section>
+  `;
+}
+
+function renderRuleSemantics(model: PrototypeModel) {
+  const rules = ruleMetamodel(model);
+  if (!rules) {
+    return "";
+  }
+
+  const selectedSummary = familyDeltaMap(model).get(state.selectedFamilyId);
+
+  return `
+    <section class="panel">
+      <div class="section-head">
+        <div>
+          <div class="eyebrow">Semantic Layer</div>
+          <h2>Coverage Semantics</h2>
+          <p class="section-copy">This is the abstraction layer that makes questions like "is the LCD really different from the NCD?" computable. Rules are decomposed into canonical requirements, document-level statements, and family-level delta patterns.</p>
+        </div>
+      </div>
+
+      <div class="rule-layer-grid">
+        ${rules.abstractionLayers
+          .map(
+            (layer) => `
+              <article class="rule-layer-card">
+                <div class="eyebrow">${escapeHtml(layer.id)}</div>
+                <h3>${escapeHtml(layer.label)}</h3>
+                <p>${escapeHtml(layer.description)}</p>
+              </article>
+            `,
+          )
+          .join("")}
+      </div>
+
+      <div class="rule-legend-grid">
+        ${rules.relationLegend
+          .map(
+            (item) => `
+              <article class="rule-legend-card">
+                <div class="rule-legend-top">
+                  ${relationChip(item.label, item.id)}
+                </div>
+                <p>${escapeHtml(item.meaning)}</p>
+              </article>
+            `,
+          )
+          .join("")}
+      </div>
+
+      <div class="section-head secondary">
+        <div>
+          <h3>Family Delta Overview</h3>
+          <p class="section-copy">Every family is summarized as a mix of national baseline, reuse, narrowing, operationalization, and genuinely new local branch logic.</p>
+        </div>
+      </div>
+
+      <div class="delta-grid">
+        ${rules.familyDeltaSummaries
+          .map((summary) => {
+            const family = familyMap(model).get(summary.familyId);
+            const active = summary.familyId === state.selectedFamilyId;
+            const countEntries = Object.entries(summary.counts).filter(([, value]) => value > 0);
+
+            return `
+              <article class="delta-card ${active ? "is-active" : ""}">
+                <div class="delta-card-head">
+                  <div>
+                    <div class="eyebrow">${escapeHtml(family?.stage ?? "Family")}</div>
+                    <h3>${escapeHtml(family?.label ?? summary.familyId)}</h3>
+                  </div>
+                  <button class="layer-family-chip ${active ? "is-active" : ""}" data-family="${summary.familyId}">
+                    ${active ? "Current focus" : "Focus"}
+                  </button>
+                </div>
+                <p>${escapeHtml(summary.takeaway)}</p>
+                <div class="delta-counts">
+                  ${countEntries
+                    .map(([relation, value]) =>
+                      relationChip(`${value} ${relation}`, relation, `${value} structured statements classified as ${relation}.`),
+                    )
+                    .join("")}
+                </div>
+                <div class="delta-sources">
+                  <div class="source-row">${sourceLinks(model, [...summary.baselineDocumentIds, ...summary.localDocumentIds])}</div>
+                </div>
+              </article>
+            `;
+          })
+          .join("")}
+      </div>
+
+      <div class="section-head secondary">
+        <div>
+          <h3>Analytic Questions This Model Supports</h3>
+        </div>
+      </div>
+
+      <div class="question-grid">
+        ${rules.analyticQuestions
+          .map(
+            (question) => `
+              <article class="insight-card">
+                <h3>${escapeHtml(question.prompt)}</h3>
+                <p>${escapeHtml(question.answer)}</p>
+                <div class="delta-counts">
+                  ${question.viewIds.map((viewId) => noteChip(viewId, "neutral")).join("")}
+                </div>
+              </article>
+            `,
+          )
+          .join("")}
+      </div>
+    </section>
+  `;
+}
+
+function renderRequirementDictionary(model: PrototypeModel) {
+  const rules = ruleMetamodel(model);
+  if (!rules) {
+    return "";
+  }
+
+  const selectedFamilyId = state.selectedFamilyId;
+
+  return `
+    <section class="panel">
+      <div class="section-head">
+        <div>
+          <div class="eyebrow">Requirement Dictionary</div>
+          <h2>Canonical Requirement Entities</h2>
+          <p class="section-copy">Each reusable requirement becomes a first-class entity with a definition, evidence payload, and known reusers across the OSA policy graph.</p>
+        </div>
+      </div>
+
+      <div class="dictionary-group-stack">
+        ${rules.requirementGroups
+          .map((group) => {
+            const entries = rules.requirementCatalog.filter((entry) => entry.groupId === group.id);
+            return `
+              <section class="dictionary-group">
+                <div class="section-head secondary">
+                  <div>
+                    <h3>${escapeHtml(group.label)}</h3>
+                    <p class="section-copy">${escapeHtml(group.description)}</p>
+                  </div>
+                </div>
+
+                <div class="requirement-grid">
+                  ${entries
+                    .map((item) => {
+                      const active = item.usedByFamilies.includes(selectedFamilyId);
+                      return `
+                        <article class="requirement-card ${active ? "is-active" : ""}">
+                          <div class="requirement-head">
+                            <div class="requirement-title">${escapeHtml(item.label)}</div>
+                            ${noteChip(item.valueType, "neutral")}
+                          </div>
+                          <div class="requirement-question">${escapeHtml(item.canonicalQuestion)}</div>
+                          <p class="requirement-definition">${escapeHtml(item.definition)}</p>
+                          <div class="requirement-subhead">Typical evidence</div>
+                          <div class="typed-list">
+                            ${item.typicalEvidence.map((evidence) => `<div class="typed-list-item">${escapeHtml(evidence)}</div>`).join("")}
+                          </div>
+                          ${
+                            item.relatedVariableIds.length
+                              ? `
+                                <div class="requirement-subhead">Related variables</div>
+                                <div class="delta-counts">
+                                  ${item.relatedVariableIds.map((id) => noteChip(id, "muted")).join("")}
+                                </div>
+                              `
+                              : ""
+                          }
+                          <div class="requirement-subhead">Used by families</div>
+                          <div class="used-by-row">
+                            ${item.usedByFamilies
+                              .map((familyId) => {
+                                const family = familyMap(model).get(familyId);
+                                return family
+                                  ? `<span class="family-pill ${familyId === selectedFamilyId ? "is-current" : ""}">${escapeHtml(family.label)}</span>`
+                                  : "";
+                              })
+                              .join("")}
+                          </div>
+                        </article>
+                      `;
+                    })
+                    .join("")}
+                </div>
+              </section>
+            `;
+          })
+          .join("")}
+      </div>
+    </section>
+  `;
+}
+
+function renderFamilyLineage(model: PrototypeModel) {
+  const rules = ruleMetamodel(model);
+  if (!rules) {
+    return "";
+  }
+
+  const requirements = requirementMap(model);
+  const groups = groupMap(model);
+
+  return `
+    <section class="panel">
+      <div class="section-head">
+        <div>
+          <div class="eyebrow">Comparative Surface</div>
+          <h2>Requirement Lineage Matrix</h2>
+          <p class="section-copy">Rows are canonical requirements. Columns are policy families. Each cell says whether that family reuses the national rule, narrows it, operationalizes it, or introduces a genuinely different branch of logic.</p>
+        </div>
+      </div>
+
+      <div class="matrix-wrap">
+        <table class="matrix-table lineage-table">
+          <thead>
+            <tr>
+              <th>Requirement</th>
+              ${rules.familyLineage.columns
+                .map(
+                  (column) => `
+                    <th class="${column.familyId === state.selectedFamilyId ? "is-current" : ""}">
+                      <div class="table-col-head">${escapeHtml(column.label)}</div>
+                    </th>
+                  `,
+                )
+                .join("")}
+            </tr>
+          </thead>
+          <tbody>
+            ${rules.familyLineage.rows
+              .map((row) => {
+                const requirement = requirements.get(row.requirementId);
+                const group = requirement ? groups.get(requirement.groupId) : null;
+
+                return `
+                  <tr>
+                    <td class="lineage-requirement-cell">
+                      <div class="variation-label">${escapeHtml(requirement?.label ?? row.requirementId)}</div>
+                      ${group ? `<div class="table-col-subtle">${escapeHtml(group.label)}</div>` : ""}
+                      <div class="variation-note">${escapeHtml(row.whyItMatters)}</div>
+                    </td>
+                    ${rules.familyLineage.columns
+                      .map((column) => {
+                        const cell = row.cells.find((item) => item.familyId === column.familyId);
+                        if (!cell) {
+                          return `<td class="lineage-cell"><div class="variation-note">—</div></td>`;
+                        }
+
+                        return `
+                          <td class="lineage-cell ${column.familyId === state.selectedFamilyId ? "is-current" : ""}">
+                            <div class="delta-counts">
+                              ${relationChip(cell.relation, cell.relation)}
+                            </div>
+                            <div class="lineage-value">${escapeHtml(cell.valueSummary)}</div>
+                            <div class="source-row">${sourceLinks(model, cell.sourceDocumentIds)}</div>
+                          </td>
+                        `;
+                      })
+                      .join("")}
+                  </tr>
+                `;
+              })
+              .join("")}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  `;
+}
+
+function renderSelectedFamilyRuleLedger(model: PrototypeModel) {
+  const rules = ruleMetamodel(model);
+  if (!rules) {
+    return "";
+  }
+
+  const selectedFamily = currentFamily(model);
+  const summary = familyDeltaMap(model).get(state.selectedFamilyId);
+  const profileIds = new Set<string>([
+    ...(summary?.baselineDocumentIds ?? []),
+    ...(summary?.localDocumentIds ?? []),
+  ]);
+
+  const profiles = list(rules.documentProfiles)
+    .filter((profile) => profile.familyId === state.selectedFamilyId || profileIds.has(profile.documentId))
+    .sort((left, right) => {
+      const scopeOrder = new Map([
+        ["national", 0],
+        ["local", 1],
+        ["billing", 2],
+      ]);
+      return (
+        (scopeOrder.get(left.scopeLevel) ?? 9) - (scopeOrder.get(right.scopeLevel) ?? 9) ||
+        left.displayId.localeCompare(right.displayId)
+      );
+    });
+  const requirements = requirementMap(model);
+
+  return `
+    <section class="panel">
+      <div class="section-head">
+        <div>
+          <div class="eyebrow">Document Rule Packs</div>
+          <h2>${escapeHtml(selectedFamily.label)} Rule Ledger</h2>
+          <p class="section-copy">The selected family now resolves to structured document packs. Each card shows which canonical requirements the document touches and whether it is baseline, narrowing, operationalization, a new therapy branch, or a coding article.</p>
+        </div>
+      </div>
+
+      <div class="doc-ledger-grid">
+        ${profiles
+          .map((profile) => `
+            <article class="doc-rule-card">
+              <div class="doc-rule-head">
+                <div>
+                  <div class="delta-counts">
+                    ${noteChip(profile.scopeLevel, profile.scopeLevel === "national" ? "ncd" : profile.scopeLevel === "local" ? "lcd" : "article")}
+                    ${noteChip(profile.roleInPathway, "neutral")}
+                  </div>
+                  <h3>${docChip(model, profile.displayId, profile.displayId, profile.type === "NCD" ? "ncd" : profile.type === "LCD" ? "lcd" : "article", profile.title)}</h3>
+                </div>
+              </div>
+
+              <p class="doc-rule-focus">${escapeHtml(profile.focus)}</p>
+
+              ${
+                profile.baselineDocumentIds.length
+                  ? `
+                    <div class="requirement-subhead">Compared against</div>
+                    <div class="delta-counts">
+                      ${profile.baselineDocumentIds
+                        .map((documentId) => {
+                          const source = sourceMap(model).get(documentId);
+                          return source ? docChip(model, source.displayId, source.displayId, "neutral", source.title) : "";
+                        })
+                        .join("")}
+                    </div>
+                  `
+                  : ""
+              }
+
+              <div class="rule-statement-stack">
+                ${profile.statements
+                  .map((item) => {
+                    const requirement = requirements.get(item.requirementId);
+                    return `
+                      <div class="rule-statement-card">
+                        <div class="rule-statement-top">
+                          ${relationChip(item.relation, item.relation)}
+                          ${noteChip(requirement?.shortLabel ?? item.requirementId, "neutral")}
+                          ${noteChip(item.polarity, "muted")}
+                        </div>
+                        <div class="rule-statement-value">${escapeHtml(item.valueSummary)}</div>
+                        ${
+                          item.note
+                            ? `<div class="variation-note">${escapeHtml(item.note)}</div>`
+                            : ""
+                        }
+                      </div>
+                    `;
+                  })
+                  .join("")}
+              </div>
+            </article>
+          `)
+          .join("")}
       </div>
     </section>
   `;
@@ -1906,6 +2430,10 @@ function render(model: PrototypeModel) {
       ${renderInsights(model)}
       ${renderFamilyRail(model)}
       ${renderFamilyFocus(model)}
+      ${renderRuleSemantics(model)}
+      ${renderRequirementDictionary(model)}
+      ${renderFamilyLineage(model)}
+      ${renderSelectedFamilyRuleLedger(model)}
       ${renderEligibilityLandscape(model)}
       ${renderLayering(model)}
       ${renderMatrix(model)}

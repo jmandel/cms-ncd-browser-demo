@@ -204,15 +204,137 @@ a:hover {
 }
 
 .insight-grid,
-.operation-grid {
+.operation-grid,
+.rule-layer-grid,
+.rule-legend-grid,
+.delta-grid,
+.question-grid,
+.requirement-grid,
+.doc-ledger-grid {
   display: grid;
   gap: 12px;
   grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
 }
 
 .insight-card,
-.operation-card {
+.operation-card,
+.rule-layer-card,
+.rule-legend-card,
+.delta-card,
+.requirement-card,
+.doc-rule-card {
   padding: 16px;
+}
+
+.dictionary-group-stack {
+  display: grid;
+  gap: 18px;
+}
+
+.dictionary-group + .dictionary-group {
+  padding-top: 8px;
+  border-top: 1px solid var(--line);
+}
+
+.rule-layer-card,
+.rule-legend-card,
+.delta-card,
+.requirement-card,
+.doc-rule-card {
+  background: linear-gradient(180deg, var(--paper), var(--paper-2));
+}
+
+.rule-layer-card h3,
+.rule-legend-card h3,
+.delta-card h3,
+.doc-rule-card h3 {
+  margin: 6px 0 8px;
+}
+
+.rule-layer-card p,
+.rule-legend-card p,
+.delta-card p,
+.doc-rule-card p,
+.requirement-definition,
+.requirement-question,
+.doc-rule-focus,
+.lineage-value {
+  line-height: 1.58;
+}
+
+.delta-card.is-active,
+.requirement-card.is-active {
+  border-color: var(--line-strong);
+  box-shadow: var(--shadow);
+}
+
+.delta-card-head,
+.doc-rule-head,
+.requirement-head,
+.rule-statement-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.delta-counts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.requirement-title {
+  font-size: 1rem;
+  font-weight: 800;
+}
+
+.requirement-question {
+  margin-top: 10px;
+  font-weight: 700;
+}
+
+.requirement-definition {
+  margin-top: 8px;
+}
+
+.requirement-subhead {
+  margin-top: 12px;
+  color: var(--muted);
+  font-size: 0.74rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.typed-list {
+  display: grid;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.doc-rule-focus {
+  margin: 12px 0 0;
+}
+
+.rule-statement-stack {
+  display: grid;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.rule-statement-card {
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.78);
+}
+
+.rule-statement-value {
+  margin-top: 10px;
+  font-weight: 700;
+  line-height: 1.5;
 }
 
 .insight-card p,
@@ -941,6 +1063,25 @@ a:hover {
   margin-top: 6px;
 }
 
+.lineage-table th.is-current,
+.lineage-cell.is-current {
+  background: rgba(22, 102, 213, 0.05);
+}
+
+.lineage-requirement-cell {
+  min-width: 260px;
+}
+
+.lineage-cell {
+  min-width: 220px;
+  vertical-align: top;
+}
+
+.lineage-value {
+  margin-top: 10px;
+  font-size: 0.88rem;
+}
+
 .evidence-grid,
 .mac-grid {
   display: grid;
@@ -1080,6 +1221,19 @@ a:hover {
   border-color: rgba(180, 71, 93, 0.18);
   background: rgba(180, 71, 93, 0.1);
   color: var(--rose);
+}
+
+.mini-doc-chip.is-plum {
+  border-color: rgba(108, 75, 193, 0.2);
+  background: rgba(108, 75, 193, 0.09);
+  color: var(--plum);
+}
+
+.mini-doc-chip.is-ink,
+.value-pill.is-ink {
+  border-color: rgba(16, 32, 51, 0.14);
+  background: rgba(16, 32, 51, 0.08);
+  color: var(--ink);
 }
 
 .mini-doc-chip.is-group {

@@ -8,6 +8,7 @@ Current bundled prototype:
 Commands:
 
 ```bash
+bun run refresh:model
 bun run build
 bun run preview
 ```
@@ -16,6 +17,7 @@ Then open `http://localhost:3001`.
 
 What lives here:
 - `data/`: self-contained metamodel JSON, including typed treatment comparisons, LCD layering, MAC variation, and timeline data
+- `scripts/enrich-rule-metamodel.ts`: regenerates the requirement dictionary, document rule packs, lineage matrix, and contractor variance layers for the curated OSA model
 - `src/`: browser viewer code
 - `public/`: static shell, styles, and built browser bundle
 - `server.ts`: tiny Bun static preview server for local verification

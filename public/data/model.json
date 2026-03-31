@@ -3838,5 +3838,3238 @@
         "role": "secondary"
       }
     ]
+  },
+  "ruleMetamodel": {
+    "abstractionLayers": [
+      {
+        "id": "requirements",
+        "label": "Requirement dictionary",
+        "description": "Canonical requirement entities with definitions, evidence payloads, and reuse across policy families."
+      },
+      {
+        "id": "documents",
+        "label": "Document rule packs",
+        "description": "Each NCD/LCD/article decomposed into typed requirement statements with semantic relations to the baseline."
+      },
+      {
+        "id": "lineage",
+        "label": "Lineage matrix",
+        "description": "Family-by-family comparison showing whether the policy baseline is reused, narrowed, operationalized, added to, or genuinely different."
+      },
+      {
+        "id": "variance",
+        "label": "Contractor variance",
+        "description": "Fine-grained contractor differences where nominally similar LCDs diverge in wording, provider rules, or billing articles."
+      }
+    ],
+    "relationLegend": [
+      {
+        "id": "baseline",
+        "label": "National baseline",
+        "meaning": "The NCD establishes the canonical Medicare rule for this requirement.",
+        "tone": "neutral"
+      },
+      {
+        "id": "reuses",
+        "label": "Reuses baseline",
+        "meaning": "The LCD inherits the same underlying requirement without changing the disease concept.",
+        "tone": "teal"
+      },
+      {
+        "id": "narrows",
+        "label": "Narrows",
+        "meaning": "The local policy constrains an inherited rule with a stricter test, site, timing, or patient-selection gate.",
+        "tone": "amber"
+      },
+      {
+        "id": "operationalizes",
+        "label": "Operationalizes",
+        "meaning": "The local policy turns a broad national concept into auditable workflow or documentation thresholds.",
+        "tone": "blue"
+      },
+      {
+        "id": "adds",
+        "label": "Adds branch logic",
+        "meaning": "The local policy adds a therapy-specific requirement that has no direct national counterpart.",
+        "tone": "plum"
+      },
+      {
+        "id": "differs",
+        "label": "Literal difference",
+        "meaning": "Two local documents treat the same requirement differently enough to matter analytically.",
+        "tone": "rose"
+      },
+      {
+        "id": "codes",
+        "label": "Coding layer",
+        "meaning": "The rule appears in billing/article logic rather than in the main coverage criteria text.",
+        "tone": "ink"
+      }
+    ],
+    "requirementGroups": [
+      {
+        "id": "diagnosis",
+        "label": "Diagnosis And Severity",
+        "description": "How OSA is established, how severe it must be, and how measurements are interpreted."
+      },
+      {
+        "id": "step-therapy",
+        "label": "Pathway And Step Therapy",
+        "description": "When prior treatment failure, intolerance, or escalation becomes part of coverage logic."
+      },
+      {
+        "id": "workflow",
+        "label": "Workflow And Documentation",
+        "description": "Operational rules that turn broad coverage concepts into auditable steps."
+      },
+      {
+        "id": "provider-site",
+        "label": "Provider And Site",
+        "description": "Which clinicians, facilities, or special studies are required."
+      },
+      {
+        "id": "device-procedure",
+        "label": "Device And Procedure",
+        "description": "What hardware, procedure lanes, and exclusions the policy recognizes."
+      },
+      {
+        "id": "coding",
+        "label": "Coding And Adjudication",
+        "description": "What articles, code ranges, modifiers, and billing constraints operationalize the decision."
+      }
+    ],
+    "requirementCatalog": [
+      {
+        "id": "clinical-signs-symptoms",
+        "groupId": "diagnosis",
+        "label": "Clinical signs and symptoms",
+        "shortLabel": "Clinical signs and symptoms",
+        "valueType": "boolean",
+        "definition": "Whether the beneficiary has clinical signs, symptoms, or findings that justify OSA testing or treatment coverage.",
+        "canonicalQuestion": "What does the policy require for clinical signs and symptoms?",
+        "typicalEvidence": [
+          "Clinic note",
+          "Sleep medicine consultation",
+          "History and review of symptoms"
+        ],
+        "relatedVariableIds": [
+          "clinical-symptoms"
+        ],
+        "usedByFamilies": [
+          "sleep-testing",
+          "pap-therapy"
+        ]
+      },
+      {
+        "id": "treating-practitioner-order",
+        "groupId": "diagnosis",
+        "label": "Treating practitioner order",
+        "shortLabel": "Treating practitioner order",
+        "valueType": "boolean",
+        "definition": "Whether a qualified treating practitioner ordered the sleep study or downstream therapy.",
+        "canonicalQuestion": "What does the policy require for treating practitioner order?",
+        "typicalEvidence": [
+          "Signed order",
+          "Visit note",
+          "Standard written order"
+        ],
+        "relatedVariableIds": [
+          "treating-practitioner-eval"
+        ],
+        "usedByFamilies": [
+          "sleep-testing",
+          "pap-therapy",
+          "oral-appliance"
+        ]
+      },
+      {
+        "id": "valid-sleep-test-modality",
+        "groupId": "diagnosis",
+        "label": "Valid sleep-test modality",
+        "shortLabel": "Valid test modality",
+        "valueType": "enum-set",
+        "definition": "Which sleep-study modalities qualify as valid Medicare diagnostic evidence for OSA coverage decisions.",
+        "canonicalQuestion": "What does the policy require for valid sleep-test modality?",
+        "typicalEvidence": [
+          "PSG report",
+          "Home sleep test report",
+          "Channel configuration report"
+        ],
+        "relatedVariableIds": [
+          "sleep-test-type"
+        ],
+        "usedByFamilies": [
+          "sleep-testing",
+          "pap-therapy",
+          "oral-appliance",
+          "surgery",
+          "hgns"
+        ]
+      },
+      {
+        "id": "sleep-test-site-restriction",
+        "groupId": "diagnosis",
+        "label": "Sleep-test site restriction",
+        "shortLabel": "Test site restriction",
+        "valueType": "enum",
+        "definition": "Whether the policy accepts any qualifying Medicare sleep test or narrows to lab-only or PSG-only pathways.",
+        "canonicalQuestion": "What does the policy require for sleep-test site restriction?",
+        "typicalEvidence": [
+          "Facility accreditation record",
+          "Sleep study report"
+        ],
+        "relatedVariableIds": [
+          "sleep-test-type"
+        ],
+        "usedByFamilies": [
+          "surgery",
+          "hgns"
+        ]
+      },
+      {
+        "id": "sleep-study-recency",
+        "groupId": "diagnosis",
+        "label": "Sleep-study recency",
+        "shortLabel": "Study recency",
+        "valueType": "time-window",
+        "definition": "How recent the diagnostic study must be relative to the treatment decision.",
+        "canonicalQuestion": "What does the policy require for sleep-study recency?",
+        "typicalEvidence": [
+          "Sleep study date",
+          "Consultation date"
+        ],
+        "relatedVariableIds": [
+          "psg-recency"
+        ],
+        "usedByFamilies": [
+          "hgns"
+        ]
+      },
+      {
+        "id": "adult-age-threshold",
+        "groupId": "diagnosis",
+        "label": "Adult age threshold",
+        "shortLabel": "Age gate",
+        "valueType": "numeric-threshold",
+        "definition": "Age requirement for treatment eligibility, including adult-only coverage or explicit minimum age.",
+        "canonicalQuestion": "What does the policy require for adult age threshold?",
+        "typicalEvidence": [
+          "Demographics",
+          "Date of birth"
+        ],
+        "relatedVariableIds": [],
+        "usedByFamilies": [
+          "pap-therapy",
+          "hgns"
+        ]
+      },
+      {
+        "id": "ahi-rdi-threshold",
+        "groupId": "diagnosis",
+        "label": "AHI/RDI severity threshold",
+        "shortLabel": "Severity gate",
+        "valueType": "numeric-range",
+        "definition": "Apnea-hypopnea or respiratory disturbance thresholds that determine whether the disease is severe enough for a branch of coverage.",
+        "canonicalQuestion": "What does the policy require for ahi/rdi severity threshold?",
+        "typicalEvidence": [
+          "Sleep study AHI",
+          "Sleep study RDI"
+        ],
+        "relatedVariableIds": [
+          "ahi-rdi"
+        ],
+        "usedByFamilies": [
+          "pap-therapy",
+          "oral-appliance",
+          "surgery",
+          "hgns"
+        ]
+      },
+      {
+        "id": "mild-comorbidity-branch",
+        "groupId": "diagnosis",
+        "label": "Mild OSA comorbidity branch",
+        "shortLabel": "Mild branch",
+        "valueType": "enum-set",
+        "definition": "Whether mild OSA can qualify only when paired with symptoms or qualifying comorbidities.",
+        "canonicalQuestion": "What does the policy require for mild osa comorbidity branch?",
+        "typicalEvidence": [
+          "Problem list",
+          "Symptom documentation",
+          "Sleep medicine assessment"
+        ],
+        "relatedVariableIds": [
+          "symptoms-comorbidities"
+        ],
+        "usedByFamilies": [
+          "pap-therapy",
+          "oral-appliance"
+        ]
+      },
+      {
+        "id": "obstructive-predominance-limit",
+        "groupId": "diagnosis",
+        "label": "Obstructive predominance limit",
+        "shortLabel": "Central-event ceiling",
+        "valueType": "numeric-threshold",
+        "definition": "Upper bound on central or mixed apneas as a share of total AHI when selecting patients for implant therapy.",
+        "canonicalQuestion": "What does the policy require for obstructive predominance limit?",
+        "typicalEvidence": [
+          "Sleep study event breakdown"
+        ],
+        "relatedVariableIds": [],
+        "usedByFamilies": [
+          "hgns"
+        ]
+      },
+      {
+        "id": "bmi-upper-limit",
+        "groupId": "diagnosis",
+        "label": "BMI upper limit",
+        "shortLabel": "BMI gate",
+        "valueType": "numeric-threshold",
+        "definition": "Maximum body-mass index permitted by the coverage rule.",
+        "canonicalQuestion": "What does the policy require for bmi upper limit?",
+        "typicalEvidence": [
+          "Height and weight",
+          "BMI calculation"
+        ],
+        "relatedVariableIds": [
+          "body-mass-index"
+        ],
+        "usedByFamilies": [
+          "hgns"
+        ]
+      },
+      {
+        "id": "pretest-in-person-evaluation",
+        "groupId": "workflow",
+        "label": "Pre-test in-person evaluation",
+        "shortLabel": "Pre-test eval",
+        "valueType": "boolean",
+        "definition": "Whether the beneficiary must have an in-person clinical evaluation before the qualifying sleep study.",
+        "canonicalQuestion": "What does the policy require for pre-test in-person evaluation?",
+        "typicalEvidence": [
+          "Visit note"
+        ],
+        "relatedVariableIds": [
+          "treating-practitioner-eval"
+        ],
+        "usedByFamilies": [
+          "pap-therapy",
+          "oral-appliance"
+        ]
+      },
+      {
+        "id": "cpap-failure-definition",
+        "groupId": "step-therapy",
+        "label": "CPAP failure definition",
+        "shortLabel": "CPAP failure",
+        "valueType": "structured-text",
+        "definition": "How the policy defines failed CPAP therapy when a downstream treatment requires prior PAP failure.",
+        "canonicalQuestion": "What does the policy require for cpap failure definition?",
+        "typicalEvidence": [
+          "Compliance download",
+          "PAP efficacy note",
+          "Sleep specialist note"
+        ],
+        "relatedVariableIds": [
+          "pap-failure"
+        ],
+        "usedByFamilies": [
+          "hgns",
+          "oral-appliance",
+          "surgery"
+        ]
+      },
+      {
+        "id": "cpap-intolerance-definition",
+        "groupId": "step-therapy",
+        "label": "CPAP intolerance definition",
+        "shortLabel": "CPAP intolerance",
+        "valueType": "structured-text",
+        "definition": "How the policy defines intolerance to CPAP when alternative therapy becomes coverable.",
+        "canonicalQuestion": "What does the policy require for cpap intolerance definition?",
+        "typicalEvidence": [
+          "Compliance report",
+          "Mask/interface trial note",
+          "Returned-device documentation"
+        ],
+        "relatedVariableIds": [
+          "pap-failure"
+        ],
+        "usedByFamilies": [
+          "oral-appliance",
+          "surgery",
+          "hgns"
+        ]
+      },
+      {
+        "id": "shared-decision-making",
+        "groupId": "step-therapy",
+        "label": "Shared decision-making",
+        "shortLabel": "SDM",
+        "valueType": "structured-text",
+        "definition": "How the policy defines and documents the patient-provider decision process before implant therapy.",
+        "canonicalQuestion": "What does the policy require for shared decision-making?",
+        "typicalEvidence": [
+          "Visit documentation",
+          "Referral note",
+          "Implant consult note"
+        ],
+        "relatedVariableIds": [],
+        "usedByFamilies": [
+          "hgns"
+        ]
+      },
+      {
+        "id": "cpap-trial-window",
+        "groupId": "workflow",
+        "label": "Trial and continuation window",
+        "shortLabel": "Trial window",
+        "valueType": "time-window",
+        "definition": "The coverage window used to establish initial benefit and continuation of PAP coverage.",
+        "canonicalQuestion": "What does the policy require for trial and continuation window?",
+        "typicalEvidence": [
+          "Usage history",
+          "Initial setup date",
+          "Coverage determination date"
+        ],
+        "relatedVariableIds": [],
+        "usedByFamilies": [
+          "pap-therapy"
+        ]
+      },
+      {
+        "id": "objective-adherence-threshold",
+        "groupId": "workflow",
+        "label": "Objective adherence threshold",
+        "shortLabel": "Adherence threshold",
+        "valueType": "numeric-threshold",
+        "definition": "The machine-derived use threshold that the beneficiary must meet for continued PAP coverage or for some local alternative-treatment definitions.",
+        "canonicalQuestion": "What does the policy require for objective adherence threshold?",
+        "typicalEvidence": [
+          "PAP compliance download"
+        ],
+        "relatedVariableIds": [],
+        "usedByFamilies": [
+          "pap-therapy",
+          "hgns"
+        ]
+      },
+      {
+        "id": "followup-reevaluation-window",
+        "groupId": "workflow",
+        "label": "Clinical re-evaluation window",
+        "shortLabel": "Re-evaluation window",
+        "valueType": "time-window",
+        "definition": "When the treating practitioner must re-evaluate the beneficiary to continue coverage.",
+        "canonicalQuestion": "What does the policy require for clinical re-evaluation window?",
+        "typicalEvidence": [
+          "Visit date",
+          "Clinic note"
+        ],
+        "relatedVariableIds": [],
+        "usedByFamilies": [
+          "pap-therapy"
+        ]
+      },
+      {
+        "id": "anatomic-assessment",
+        "groupId": "provider-site",
+        "label": "Anatomic assessment",
+        "shortLabel": "Anatomic screen",
+        "valueType": "structured-text",
+        "definition": "Procedure or clinical assessment that must confirm suitable upper-airway anatomy.",
+        "canonicalQuestion": "What does the policy require for anatomic assessment?",
+        "typicalEvidence": [
+          "DISE report",
+          "ENT evaluation",
+          "Operative note"
+        ],
+        "relatedVariableIds": [],
+        "usedByFamilies": [
+          "surgery",
+          "hgns"
+        ]
+      },
+      {
+        "id": "provider-role",
+        "groupId": "provider-site",
+        "label": "Provider role",
+        "shortLabel": "Provider role",
+        "valueType": "enum-set",
+        "definition": "Which clinician roles must evaluate, order, supply, or perform the covered service.",
+        "canonicalQuestion": "What does the policy require for provider role?",
+        "typicalEvidence": [
+          "Provider specialty",
+          "Ordering clinician documentation"
+        ],
+        "relatedVariableIds": [],
+        "usedByFamilies": [
+          "pap-therapy",
+          "oral-appliance",
+          "surgery",
+          "hgns"
+        ]
+      },
+      {
+        "id": "board-credentialing",
+        "groupId": "provider-site",
+        "label": "Board credentialing language",
+        "shortLabel": "Credentialing",
+        "valueType": "enum",
+        "definition": "Whether the policy requires board-certified specialists only or accepts board-eligible clinicians.",
+        "canonicalQuestion": "What does the policy require for board credentialing language?",
+        "typicalEvidence": [
+          "Board certification",
+          "Residency/fellowship credentials"
+        ],
+        "relatedVariableIds": [],
+        "usedByFamilies": [
+          "hgns"
+        ]
+      },
+      {
+        "id": "sleep-lab-accreditation",
+        "groupId": "provider-site",
+        "label": "Sleep lab accreditation",
+        "shortLabel": "Lab accreditation",
+        "valueType": "boolean",
+        "definition": "Whether the qualifying study or downstream titration must occur in an accredited sleep facility.",
+        "canonicalQuestion": "What does the policy require for sleep lab accreditation?",
+        "typicalEvidence": [
+          "AASM accreditation",
+          "Sleep facility credentials"
+        ],
+        "relatedVariableIds": [],
+        "usedByFamilies": [
+          "surgery",
+          "hgns"
+        ]
+      },
+      {
+        "id": "dise-validation",
+        "groupId": "provider-site",
+        "label": "DISE validation requirement",
+        "shortLabel": "DISE validation",
+        "valueType": "structured-text",
+        "definition": "Special certification or validation rules that govern the DISE interpretation used for HGNS selection.",
+        "canonicalQuestion": "What does the policy require for dise validation requirement?",
+        "typicalEvidence": [
+          "DISE interpretation record",
+          "Manufacturer validation certificate"
+        ],
+        "relatedVariableIds": [],
+        "usedByFamilies": [
+          "hgns"
+        ]
+      },
+      {
+        "id": "device-lane",
+        "groupId": "device-procedure",
+        "label": "Device lane",
+        "shortLabel": "Device lane",
+        "valueType": "enum-set",
+        "definition": "Which device types are covered, escalated, or excluded for a therapy branch.",
+        "canonicalQuestion": "What does the policy require for device lane?",
+        "typicalEvidence": [
+          "HCPCS device code",
+          "Detailed written order",
+          "Supplier claim"
+        ],
+        "relatedVariableIds": [
+          "claim-code-bundle"
+        ],
+        "usedByFamilies": [
+          "pap-therapy",
+          "oral-appliance",
+          "hgns"
+        ]
+      },
+      {
+        "id": "noncovered-procedures",
+        "groupId": "device-procedure",
+        "label": "Explicit non-covered procedures",
+        "shortLabel": "Not-covered lane",
+        "valueType": "enum-set",
+        "definition": "Named procedures or device categories the policy specifically excludes from coverage.",
+        "canonicalQuestion": "What does the policy require for explicit non-covered procedures?",
+        "typicalEvidence": [
+          "Procedure code",
+          "Operative note"
+        ],
+        "relatedVariableIds": [
+          "claim-code-bundle"
+        ],
+        "usedByFamilies": [
+          "oral-appliance",
+          "surgery",
+          "pap-therapy"
+        ]
+      },
+      {
+        "id": "procedure-coverage-lane",
+        "groupId": "device-procedure",
+        "label": "Covered procedure lane",
+        "shortLabel": "Procedure lane",
+        "valueType": "enum-set",
+        "definition": "Which CPT/HCPCS procedure lanes are recognized as the covered procedural implementation of the policy.",
+        "canonicalQuestion": "What does the policy require for covered procedure lane?",
+        "typicalEvidence": [
+          "CPT code",
+          "Operative note",
+          "Claim line"
+        ],
+        "relatedVariableIds": [
+          "claim-code-bundle"
+        ],
+        "usedByFamilies": [
+          "surgery",
+          "hgns"
+        ]
+      },
+      {
+        "id": "primary-diagnosis-code",
+        "groupId": "coding",
+        "label": "Primary diagnosis code requirement",
+        "shortLabel": "Primary diagnosis",
+        "valueType": "code-set",
+        "definition": "Which primary diagnosis code anchors claim submission for the covered treatment.",
+        "canonicalQuestion": "What does the policy require for primary diagnosis code requirement?",
+        "typicalEvidence": [
+          "ICD-10 code on claim"
+        ],
+        "relatedVariableIds": [
+          "claim-code-bundle"
+        ],
+        "usedByFamilies": [
+          "hgns"
+        ]
+      },
+      {
+        "id": "secondary-bmi-code-ceiling",
+        "groupId": "coding",
+        "label": "Secondary BMI code ceiling",
+        "shortLabel": "BMI code ceiling",
+        "valueType": "code-range",
+        "definition": "How far the coding article extends the BMI-related ICD code range, and whether it stays aligned to the clinical BMI rule.",
+        "canonicalQuestion": "What does the policy require for secondary bmi code ceiling?",
+        "typicalEvidence": [
+          "Secondary ICD-10 code on claim"
+        ],
+        "relatedVariableIds": [
+          "claim-code-bundle",
+          "body-mass-index"
+        ],
+        "usedByFamilies": [
+          "hgns"
+        ]
+      },
+      {
+        "id": "modifier-guidance",
+        "groupId": "coding",
+        "label": "Modifier guidance",
+        "shortLabel": "Modifier rules",
+        "valueType": "enum-set",
+        "definition": "Modifier rules or special billing instructions attached to the therapy.",
+        "canonicalQuestion": "What does the policy require for modifier guidance?",
+        "typicalEvidence": [
+          "Claim modifier",
+          "Billing article"
+        ],
+        "relatedVariableIds": [
+          "claim-code-bundle"
+        ],
+        "usedByFamilies": [
+          "hgns"
+        ]
+      },
+      {
+        "id": "mutual-exclusion-code-rules",
+        "groupId": "coding",
+        "label": "Mutual exclusion code rules",
+        "shortLabel": "Code exclusion rules",
+        "valueType": "enum-set",
+        "definition": "Do-not-bill-together guidance or mutually exclusive code-pair constraints.",
+        "canonicalQuestion": "What does the policy require for mutual exclusion code rules?",
+        "typicalEvidence": [
+          "Claim lines",
+          "Billing article"
+        ],
+        "relatedVariableIds": [
+          "claim-code-bundle"
+        ],
+        "usedByFamilies": [
+          "hgns"
+        ]
+      },
+      {
+        "id": "legacy-code-reference",
+        "groupId": "coding",
+        "label": "Legacy code reference",
+        "shortLabel": "Legacy code",
+        "valueType": "enum-set",
+        "definition": "References to legacy or transitional procedure codes that survive in older articles or special MAC language.",
+        "canonicalQuestion": "What does the policy require for legacy code reference?",
+        "typicalEvidence": [
+          "Legacy CPT code",
+          "Archived billing article"
+        ],
+        "relatedVariableIds": [
+          "claim-code-bundle"
+        ],
+        "usedByFamilies": [
+          "hgns"
+        ]
+      },
+      {
+        "id": "article-documentation-specificity",
+        "groupId": "coding",
+        "label": "Article documentation specificity",
+        "shortLabel": "Article specificity",
+        "valueType": "structured-text",
+        "definition": "Whether the billing article just says 'maintain records' or enumerates specific evidence artifacts that must be present.",
+        "canonicalQuestion": "What does the policy require for article documentation specificity?",
+        "typicalEvidence": [
+          "Billing article",
+          "Medical record packet"
+        ],
+        "relatedVariableIds": [],
+        "usedByFamilies": [
+          "hgns",
+          "surgery"
+        ]
+      },
+      {
+        "id": "cross-reference-local-sleep-policy",
+        "groupId": "coding",
+        "label": "Cross-reference to local sleep-study policy",
+        "shortLabel": "Related sleep policy",
+        "valueType": "enum",
+        "definition": "Which local sleep-testing LCD or article the downstream therapy cross-references for diagnostic validity.",
+        "canonicalQuestion": "What does the policy require for cross-reference to local sleep-study policy?",
+        "typicalEvidence": [
+          "Related document section",
+          "Cross-referenced LCD/article"
+        ],
+        "relatedVariableIds": [],
+        "usedByFamilies": [
+          "hgns"
+        ]
+      }
+    ],
+    "documentProfiles": [
+      {
+        "documentId": "ncd-sleep-testing",
+        "displayId": "240.4.1",
+        "title": "Sleep Testing for Obstructive Sleep Apnea (OSA)",
+        "type": "NCD",
+        "familyId": "sleep-testing",
+        "familyLabel": "Sleep testing",
+        "scopeLevel": "national",
+        "roleInPathway": "Diagnostic floor",
+        "focus": "Defines which sleep studies count as valid Medicare evidence for OSA diagnosis.",
+        "baselineDocumentIds": [],
+        "statements": [
+          {
+            "requirementId": "clinical-signs-symptoms",
+            "relation": "baseline",
+            "polarity": "requires",
+            "valueSummary": "Clinical signs and symptoms suggestive of OSA are required before testing.",
+            "significance": "high"
+          },
+          {
+            "requirementId": "treating-practitioner-order",
+            "relation": "baseline",
+            "polarity": "requires",
+            "valueSummary": "Testing must be ordered by the treating physician or qualified treating practitioner.",
+            "significance": "high"
+          },
+          {
+            "requirementId": "valid-sleep-test-modality",
+            "relation": "baseline",
+            "polarity": "allows",
+            "valueSummary": "Type I PSG, Type II, Type III, Type IV, and PAT-based multi-channel pathways qualify when technical criteria are met.",
+            "significance": "high"
+          },
+          {
+            "requirementId": "sleep-test-site-restriction",
+            "relation": "baseline",
+            "polarity": "allows",
+            "valueSummary": "Type II-IV pathways may occur attended or unattended outside the lab; Type I PSG is lab-based.",
+            "significance": "medium"
+          }
+        ]
+      },
+      {
+        "documentId": "ncd-cpap",
+        "displayId": "240.4",
+        "title": "Continuous Positive Airway Pressure (CPAP) Therapy For Obstructive Sleep Apnea (OSA)",
+        "type": "NCD",
+        "familyId": "pap-therapy",
+        "familyLabel": "PAP / CPAP",
+        "scopeLevel": "national",
+        "roleInPathway": "National first-line PAP rule",
+        "focus": "Defines national CPAP entry thresholds and the initial trial concept.",
+        "baselineDocumentIds": [
+          "ncd-sleep-testing"
+        ],
+        "statements": [
+          {
+            "requirementId": "adult-age-threshold",
+            "relation": "baseline",
+            "polarity": "requires",
+            "valueSummary": "Adult OSA coverage only.",
+            "significance": "medium",
+            "structuredValue": {
+              "min": 18,
+              "unit": "years"
+            }
+          },
+          {
+            "requirementId": "valid-sleep-test-modality",
+            "relation": "reuses",
+            "polarity": "requires",
+            "valueSummary": "Coverage uses Medicare-valid PSG or Type II-IV testing from the sleep-testing NCD.",
+            "significance": "high"
+          },
+          {
+            "requirementId": "ahi-rdi-threshold",
+            "relation": "baseline",
+            "polarity": "requires",
+            "valueSummary": "AHI/RDI ≥ 15 qualifies directly; AHI/RDI 5-14 qualifies only with symptoms or comorbidities.",
+            "significance": "high"
+          },
+          {
+            "requirementId": "mild-comorbidity-branch",
+            "relation": "baseline",
+            "polarity": "requires",
+            "valueSummary": "Mild OSA requires symptoms or listed comorbidities such as hypertension, ischemic heart disease, or stroke.",
+            "significance": "high"
+          },
+          {
+            "requirementId": "cpap-trial-window",
+            "relation": "baseline",
+            "polarity": "requires",
+            "valueSummary": "Initial coverage limited to a 12-week trial period.",
+            "significance": "high",
+            "structuredValue": {
+              "trialWeeks": 12
+            }
+          },
+          {
+            "requirementId": "provider-role",
+            "relation": "baseline",
+            "polarity": "requires",
+            "valueSummary": "Beneficiary education on device use is part of the covered CPAP pathway.",
+            "significance": "medium"
+          }
+        ]
+      },
+      {
+        "documentId": "lcd-pap-dme",
+        "displayId": "L33718",
+        "title": "Positive Airway Pressure (PAP) Devices for the Treatment of Obstructive Sleep Apnea",
+        "type": "LCD",
+        "familyId": "pap-therapy",
+        "familyLabel": "PAP / CPAP",
+        "scopeLevel": "local",
+        "roleInPathway": "PAP operational layer",
+        "focus": "Turns the CPAP NCD into auditable continuation, adherence, and device-escalation logic.",
+        "baselineDocumentIds": [
+          "ncd-cpap",
+          "ncd-sleep-testing"
+        ],
+        "statements": [
+          {
+            "requirementId": "pretest-in-person-evaluation",
+            "relation": "narrows",
+            "polarity": "requires",
+            "valueSummary": "In-person treating-practitioner evaluation must occur before the qualifying sleep study.",
+            "significance": "high"
+          },
+          {
+            "requirementId": "valid-sleep-test-modality",
+            "relation": "reuses",
+            "polarity": "requires",
+            "valueSummary": "Diagnostic validity still depends on Medicare-covered sleep-testing pathways.",
+            "significance": "medium"
+          },
+          {
+            "requirementId": "ahi-rdi-threshold",
+            "relation": "reuses",
+            "polarity": "requires",
+            "valueSummary": "Retains the NCD severity thresholds rather than redefining OSA severity.",
+            "significance": "medium"
+          },
+          {
+            "requirementId": "cpap-trial-window",
+            "relation": "operationalizes",
+            "polarity": "requires",
+            "valueSummary": "Operationalized as a 90-day continuation window instead of a general 12-week concept.",
+            "significance": "high",
+            "structuredValue": {
+              "initialDays": 90
+            }
+          },
+          {
+            "requirementId": "objective-adherence-threshold",
+            "relation": "operationalizes",
+            "polarity": "requires",
+            "valueSummary": "Objective adherence: ≥4 hours/night on ≥70% of nights in a consecutive 30-day period.",
+            "significance": "high"
+          },
+          {
+            "requirementId": "followup-reevaluation-window",
+            "relation": "operationalizes",
+            "polarity": "requires",
+            "valueSummary": "Treating practitioner must re-evaluate between days 31 and 91.",
+            "significance": "high"
+          },
+          {
+            "requirementId": "device-lane",
+            "relation": "narrows",
+            "polarity": "requires",
+            "valueSummary": "E0470 is only reachable after documented E0601 failure; E0601 remains the base device.",
+            "significance": "high"
+          },
+          {
+            "requirementId": "noncovered-procedures",
+            "relation": "narrows",
+            "polarity": "denies",
+            "valueSummary": "E0471 with backup rate is not covered for OSA.",
+            "significance": "high"
+          }
+        ]
+      },
+      {
+        "documentId": "lcd-oral-appliance",
+        "displayId": "L33611",
+        "title": "Oral Appliances for Obstructive Sleep Apnea",
+        "type": "LCD",
+        "familyId": "oral-appliance",
+        "familyLabel": "Oral appliance",
+        "scopeLevel": "local",
+        "roleInPathway": "Alternative device branch",
+        "focus": "Creates an oral-appliance branch that reuses the national diagnostic floor but adds device- and supplier-specific rules.",
+        "baselineDocumentIds": [
+          "ncd-sleep-testing",
+          "ncd-cpap"
+        ],
+        "statements": [
+          {
+            "requirementId": "pretest-in-person-evaluation",
+            "relation": "narrows",
+            "polarity": "requires",
+            "valueSummary": "In-person evaluation required before the qualifying sleep study.",
+            "significance": "medium"
+          },
+          {
+            "requirementId": "valid-sleep-test-modality",
+            "relation": "reuses",
+            "polarity": "requires",
+            "valueSummary": "Diagnosis still depends on a Medicare-valid sleep test.",
+            "significance": "high"
+          },
+          {
+            "requirementId": "ahi-rdi-threshold",
+            "relation": "differs",
+            "polarity": "requires",
+            "valueSummary": "AHI 5-30 can qualify directly depending on severity branch; AHI >30 triggers a PAP-failure path.",
+            "significance": "high"
+          },
+          {
+            "requirementId": "mild-comorbidity-branch",
+            "relation": "reuses",
+            "polarity": "requires",
+            "valueSummary": "For mild disease, the same symptom/comorbidity branch from PAP logic remains in play.",
+            "significance": "medium"
+          },
+          {
+            "requirementId": "cpap-intolerance-definition",
+            "relation": "adds",
+            "polarity": "requires",
+            "valueSummary": "Severe OSA branch requires PAP intolerance or documented PAP contraindication.",
+            "significance": "high"
+          },
+          {
+            "requirementId": "device-lane",
+            "relation": "narrows",
+            "polarity": "requires",
+            "valueSummary": "Covered device lane is custom-fabricated mandibular advancement only (E0486).",
+            "significance": "high"
+          },
+          {
+            "requirementId": "noncovered-procedures",
+            "relation": "narrows",
+            "polarity": "denies",
+            "valueSummary": "Prefabricated oral appliances and tongue-positioning devices are excluded.",
+            "significance": "high"
+          },
+          {
+            "requirementId": "provider-role",
+            "relation": "adds",
+            "polarity": "requires",
+            "valueSummary": "Device must be supplied and billed by a licensed dentist (DDS or DMD).",
+            "significance": "high"
+          }
+        ]
+      },
+      {
+        "documentId": "lcd-surgery-wps",
+        "displayId": "L34526",
+        "title": "Surgical Treatment of Obstructive Sleep Apnea (OSA)",
+        "type": "LCD",
+        "familyId": "surgery",
+        "familyLabel": "Surgery",
+        "scopeLevel": "local",
+        "roleInPathway": "Escalation pathway",
+        "focus": "Uses a stricter, surgery-oriented coverage model than the national PAP NCDs.",
+        "baselineDocumentIds": [
+          "ncd-sleep-testing",
+          "ncd-cpap"
+        ],
+        "statements": [
+          {
+            "requirementId": "sleep-test-site-restriction",
+            "relation": "narrows",
+            "polarity": "requires",
+            "valueSummary": "Diagnosis must be established in an AASM-recognized certified sleep lab.",
+            "significance": "high"
+          },
+          {
+            "requirementId": "sleep-lab-accreditation",
+            "relation": "narrows",
+            "polarity": "requires",
+            "valueSummary": "AASM-certified facility is explicitly required for the diagnostic work-up.",
+            "significance": "high"
+          },
+          {
+            "requirementId": "ahi-rdi-threshold",
+            "relation": "differs",
+            "polarity": "requires",
+            "valueSummary": "RDI of 15 or higher required; no mild-comorbidity branch.",
+            "significance": "high"
+          },
+          {
+            "requirementId": "cpap-failure-definition",
+            "relation": "adds",
+            "polarity": "requires",
+            "valueSummary": "Coverage depends on failed CPAP or other appropriate non-invasive treatment.",
+            "significance": "high"
+          },
+          {
+            "requirementId": "anatomic-assessment",
+            "relation": "adds",
+            "polarity": "requires",
+            "valueSummary": "Procedure selection depends on evidence of retropalatal or combined obstruction site.",
+            "significance": "medium"
+          },
+          {
+            "requirementId": "provider-role",
+            "relation": "adds",
+            "polarity": "requires",
+            "valueSummary": "Procedure must be performed by a qualified surgeon in an appropriate setting.",
+            "significance": "medium"
+          },
+          {
+            "requirementId": "noncovered-procedures",
+            "relation": "narrows",
+            "polarity": "denies",
+            "valueSummary": "Explicitly excludes LAUP, palatal implants, somnoplasty, and tongue-base radiofrequency ablation.",
+            "significance": "high"
+          }
+        ]
+      },
+      {
+        "documentId": "article-surgery-wps",
+        "displayId": "A56905",
+        "title": "Billing and Coding: Surgical Treatment of Obstructive Sleep Apnea (OSA)",
+        "type": "Article",
+        "familyId": "surgery",
+        "familyLabel": "Surgery",
+        "scopeLevel": "billing",
+        "roleInPathway": "Surgery coding article",
+        "focus": "Translates the surgical LCD into code tables and diagnosis alignment.",
+        "baselineDocumentIds": [
+          "lcd-surgery-wps"
+        ],
+        "statements": [
+          {
+            "requirementId": "procedure-coverage-lane",
+            "relation": "codes",
+            "polarity": "codes",
+            "valueSummary": "Defines covered surgical procedure code lanes and diagnosis alignment for the WPS surgery branch.",
+            "significance": "medium"
+          },
+          {
+            "requirementId": "article-documentation-specificity",
+            "relation": "codes",
+            "polarity": "documents",
+            "valueSummary": "Billing article expects records sufficient to support procedure choice and OSA diagnosis.",
+            "significance": "low"
+          }
+        ]
+      },
+      {
+        "documentId": "lcd-hgns-wps",
+        "displayId": "L38528",
+        "title": "Hypoglossal Nerve Stimulation for the Treatment of Obstructive Sleep Apnea",
+        "type": "LCD",
+        "familyId": "hgns",
+        "familyLabel": "Hypoglossal nerve stimulation",
+        "scopeLevel": "local",
+        "roleInPathway": "HGNS contractor variant",
+        "focus": "One of the current HGNS local policies; clinically aligned with the common implant core but with WPS-specific SDM wording.",
+        "baselineDocumentIds": [
+          "ncd-sleep-testing",
+          "ncd-cpap"
+        ],
+        "statements": [
+          {
+            "requirementId": "adult-age-threshold",
+            "relation": "adds",
+            "polarity": "requires",
+            "valueSummary": "Age ≥ 22 years",
+            "significance": "high",
+            "structuredValue": {
+              "min": 22,
+              "unit": "years"
+            }
+          },
+          {
+            "requirementId": "bmi-upper-limit",
+            "relation": "adds",
+            "polarity": "requires",
+            "valueSummary": "BMI < 35 kg/m²",
+            "significance": "high",
+            "structuredValue": {
+              "maxExclusive": 35,
+              "unit": "kg/m²"
+            }
+          },
+          {
+            "requirementId": "sleep-study-recency",
+            "relation": "narrows",
+            "polarity": "requires",
+            "valueSummary": "PSG within 24 months of implant consultation",
+            "significance": "high",
+            "structuredValue": {
+              "windowMonths": 24,
+              "modality": "PSG"
+            }
+          },
+          {
+            "requirementId": "obstructive-predominance-limit",
+            "relation": "adds",
+            "polarity": "requires",
+            "valueSummary": "Central + mixed apneas < 25% of total AHI",
+            "significance": "high",
+            "structuredValue": {
+              "maxPercent": 25
+            }
+          },
+          {
+            "requirementId": "ahi-rdi-threshold",
+            "relation": "differs",
+            "polarity": "requires",
+            "valueSummary": "AHI 15-65 events/hour",
+            "significance": "high",
+            "note": "This is not the same severity branch used in the PAP NCD; HGNS creates its own implant-selection window.",
+            "structuredValue": {
+              "min": 15,
+              "max": 65,
+              "unit": "events/hour",
+              "metric": "AHI"
+            }
+          },
+          {
+            "requirementId": "anatomic-assessment",
+            "relation": "adds",
+            "polarity": "requires",
+            "valueSummary": "DISE must show no complete concentric collapse and no other anatomic compromise",
+            "significance": "high"
+          },
+          {
+            "requirementId": "provider-role",
+            "relation": "adds",
+            "polarity": "requires",
+            "valueSummary": "Sleep physician plus implanting otolaryngologist participate in selection and treatment pathway",
+            "significance": "medium"
+          },
+          {
+            "requirementId": "primary-diagnosis-code",
+            "relation": "codes",
+            "polarity": "codes",
+            "valueSummary": "Primary diagnosis anchored to G47.33 in billing articles",
+            "significance": "medium"
+          },
+          {
+            "requirementId": "cross-reference-local-sleep-policy",
+            "relation": "adds",
+            "polarity": "references",
+            "valueSummary": "Each MAC cross-references a different local sleep-study LCD/article",
+            "significance": "low"
+          },
+          {
+            "requirementId": "cpap-failure-definition",
+            "relation": "adds",
+            "polarity": "requires",
+            "valueSummary": "CPAP failure defined as AHI > 15 despite CPAP usage.",
+            "significance": "high"
+          },
+          {
+            "requirementId": "cpap-intolerance-definition",
+            "relation": "adds",
+            "polarity": "requires",
+            "valueSummary": "CPAP intolerance uses the <4 hours/night and 5 nights/week style definition.",
+            "significance": "high"
+          },
+          {
+            "requirementId": "shared-decision-making",
+            "relation": "differs",
+            "polarity": "requires",
+            "valueSummary": "SDM must be documented by both the referring physician and implanting physician.",
+            "significance": "high"
+          },
+          {
+            "requirementId": "board-credentialing",
+            "relation": "adds",
+            "polarity": "requires",
+            "valueSummary": "Implanting surgeon described as board-certified otolaryngologist.",
+            "significance": "low"
+          }
+        ]
+      },
+      {
+        "documentId": "lcd-hgns-cgs",
+        "displayId": "L38307",
+        "title": "Hypoglossal Nerve Stimulation for the Treatment of Obstructive Sleep Apnea",
+        "type": "LCD",
+        "familyId": "hgns",
+        "familyLabel": "Hypoglossal nerve stimulation",
+        "scopeLevel": "local",
+        "roleInPathway": "HGNS contractor variant",
+        "focus": "Clinically aligned HGNS LCD using the common LCD family language.",
+        "baselineDocumentIds": [
+          "ncd-sleep-testing",
+          "ncd-cpap"
+        ],
+        "statements": [
+          {
+            "requirementId": "adult-age-threshold",
+            "relation": "adds",
+            "polarity": "requires",
+            "valueSummary": "Age ≥ 22 years",
+            "significance": "high",
+            "structuredValue": {
+              "min": 22,
+              "unit": "years"
+            }
+          },
+          {
+            "requirementId": "bmi-upper-limit",
+            "relation": "adds",
+            "polarity": "requires",
+            "valueSummary": "BMI < 35 kg/m²",
+            "significance": "high",
+            "structuredValue": {
+              "maxExclusive": 35,
+              "unit": "kg/m²"
+            }
+          },
+          {
+            "requirementId": "sleep-study-recency",
+            "relation": "narrows",
+            "polarity": "requires",
+            "valueSummary": "PSG within 24 months of implant consultation",
+            "significance": "high",
+            "structuredValue": {
+              "windowMonths": 24,
+              "modality": "PSG"
+            }
+          },
+          {
+            "requirementId": "obstructive-predominance-limit",
+            "relation": "adds",
+            "polarity": "requires",
+            "valueSummary": "Central + mixed apneas < 25% of total AHI",
+            "significance": "high",
+            "structuredValue": {
+              "maxPercent": 25
+            }
+          },
+          {
+            "requirementId": "ahi-rdi-threshold",
+            "relation": "differs",
+            "polarity": "requires",
+            "valueSummary": "AHI 15-65 events/hour",
+            "significance": "high",
+            "note": "This is not the same severity branch used in the PAP NCD; HGNS creates its own implant-selection window.",
+            "structuredValue": {
+              "min": 15,
+              "max": 65,
+              "unit": "events/hour",
+              "metric": "AHI"
+            }
+          },
+          {
+            "requirementId": "anatomic-assessment",
+            "relation": "adds",
+            "polarity": "requires",
+            "valueSummary": "DISE must show no complete concentric collapse and no other anatomic compromise",
+            "significance": "high"
+          },
+          {
+            "requirementId": "provider-role",
+            "relation": "adds",
+            "polarity": "requires",
+            "valueSummary": "Sleep physician plus implanting otolaryngologist participate in selection and treatment pathway",
+            "significance": "medium"
+          },
+          {
+            "requirementId": "primary-diagnosis-code",
+            "relation": "codes",
+            "polarity": "codes",
+            "valueSummary": "Primary diagnosis anchored to G47.33 in billing articles",
+            "significance": "medium"
+          },
+          {
+            "requirementId": "cross-reference-local-sleep-policy",
+            "relation": "adds",
+            "polarity": "references",
+            "valueSummary": "Each MAC cross-references a different local sleep-study LCD/article",
+            "significance": "low"
+          },
+          {
+            "requirementId": "cpap-failure-definition",
+            "relation": "adds",
+            "polarity": "requires",
+            "valueSummary": "CPAP failure defined as AHI > 15 despite CPAP usage.",
+            "significance": "high"
+          },
+          {
+            "requirementId": "cpap-intolerance-definition",
+            "relation": "adds",
+            "polarity": "requires",
+            "valueSummary": "CPAP intolerance uses the <4 hours/night and 5 nights/week style definition.",
+            "significance": "high"
+          },
+          {
+            "requirementId": "shared-decision-making",
+            "relation": "adds",
+            "polarity": "requires",
+            "valueSummary": "SDM is documented as a patient-provider conversation, not a multi-provider attestation.",
+            "significance": "medium"
+          },
+          {
+            "requirementId": "board-credentialing",
+            "relation": "adds",
+            "polarity": "requires",
+            "valueSummary": "Implanting surgeon described as board-certified otolaryngologist.",
+            "significance": "low"
+          }
+        ]
+      },
+      {
+        "documentId": "lcd-hgns-noridian",
+        "displayId": "L38310",
+        "title": "Hypoglossal Nerve Stimulation for the Treatment of Obstructive Sleep Apnea",
+        "type": "LCD",
+        "familyId": "hgns",
+        "familyLabel": "Hypoglossal nerve stimulation",
+        "scopeLevel": "local",
+        "roleInPathway": "HGNS contractor variant",
+        "focus": "Current Noridian JE LCD; clinically aligned core with Noridian-specific credentialing and DISE validation language.",
+        "baselineDocumentIds": [
+          "ncd-sleep-testing",
+          "ncd-cpap"
+        ],
+        "statements": [
+          {
+            "requirementId": "adult-age-threshold",
+            "relation": "adds",
+            "polarity": "requires",
+            "valueSummary": "Age ≥ 22 years",
+            "significance": "high",
+            "structuredValue": {
+              "min": 22,
+              "unit": "years"
+            }
+          },
+          {
+            "requirementId": "bmi-upper-limit",
+            "relation": "adds",
+            "polarity": "requires",
+            "valueSummary": "BMI < 35 kg/m²",
+            "significance": "high",
+            "structuredValue": {
+              "maxExclusive": 35,
+              "unit": "kg/m²"
+            }
+          },
+          {
+            "requirementId": "sleep-study-recency",
+            "relation": "narrows",
+            "polarity": "requires",
+            "valueSummary": "PSG within 24 months of implant consultation",
+            "significance": "high",
+            "structuredValue": {
+              "windowMonths": 24,
+              "modality": "PSG"
+            }
+          },
+          {
+            "requirementId": "obstructive-predominance-limit",
+            "relation": "adds",
+            "polarity": "requires",
+            "valueSummary": "Central + mixed apneas < 25% of total AHI",
+            "significance": "high",
+            "structuredValue": {
+              "maxPercent": 25
+            }
+          },
+          {
+            "requirementId": "ahi-rdi-threshold",
+            "relation": "differs",
+            "polarity": "requires",
+            "valueSummary": "AHI 15-65 events/hour",
+            "significance": "high",
+            "note": "This is not the same severity branch used in the PAP NCD; HGNS creates its own implant-selection window.",
+            "structuredValue": {
+              "min": 15,
+              "max": 65,
+              "unit": "events/hour",
+              "metric": "AHI"
+            }
+          },
+          {
+            "requirementId": "anatomic-assessment",
+            "relation": "adds",
+            "polarity": "requires",
+            "valueSummary": "DISE must show no complete concentric collapse and no other anatomic compromise",
+            "significance": "high"
+          },
+          {
+            "requirementId": "provider-role",
+            "relation": "adds",
+            "polarity": "requires",
+            "valueSummary": "Sleep physician plus implanting otolaryngologist participate in selection and treatment pathway",
+            "significance": "medium"
+          },
+          {
+            "requirementId": "primary-diagnosis-code",
+            "relation": "codes",
+            "polarity": "codes",
+            "valueSummary": "Primary diagnosis anchored to G47.33 in billing articles",
+            "significance": "medium"
+          },
+          {
+            "requirementId": "cross-reference-local-sleep-policy",
+            "relation": "adds",
+            "polarity": "references",
+            "valueSummary": "Each MAC cross-references a different local sleep-study LCD/article",
+            "significance": "low"
+          },
+          {
+            "requirementId": "cpap-failure-definition",
+            "relation": "adds",
+            "polarity": "requires",
+            "valueSummary": "CPAP failure defined as AHI > 15 despite CPAP usage.",
+            "significance": "high"
+          },
+          {
+            "requirementId": "cpap-intolerance-definition",
+            "relation": "adds",
+            "polarity": "requires",
+            "valueSummary": "CPAP intolerance is <4 hours/night, 5 nights/week, or returned CPAP.",
+            "significance": "high"
+          },
+          {
+            "requirementId": "shared-decision-making",
+            "relation": "adds",
+            "polarity": "requires",
+            "valueSummary": "SDM is any documented conversation between attending provider and patient.",
+            "significance": "medium"
+          },
+          {
+            "requirementId": "dise-validation",
+            "relation": "adds",
+            "polarity": "requires",
+            "valueSummary": "DISE interpreter must meet manufacturer second-opinion validation threshold (80% agreement in 15 consecutive studies).",
+            "significance": "medium"
+          },
+          {
+            "requirementId": "board-credentialing",
+            "relation": "differs",
+            "polarity": "requires",
+            "valueSummary": "Board-certified or board-eligible otolaryngologist accepted.",
+            "significance": "low"
+          }
+        ]
+      },
+      {
+        "documentId": "lcd-hgns-noridian-jf-legacy",
+        "displayId": "L38312",
+        "title": "Hypoglossal Nerve Stimulation for the Treatment of Obstructive Sleep Apnea",
+        "type": "LCD",
+        "familyId": "hgns",
+        "familyLabel": "Hypoglossal nerve stimulation",
+        "scopeLevel": "local",
+        "roleInPathway": "HGNS legacy contractor variant",
+        "focus": "Retired JF LCD retained because it exposes legacy wording and retirement/consolidation behavior.",
+        "baselineDocumentIds": [
+          "ncd-sleep-testing",
+          "ncd-cpap"
+        ],
+        "statements": [
+          {
+            "requirementId": "adult-age-threshold",
+            "relation": "adds",
+            "polarity": "requires",
+            "valueSummary": "Age ≥ 22 years",
+            "significance": "high",
+            "structuredValue": {
+              "min": 22,
+              "unit": "years"
+            }
+          },
+          {
+            "requirementId": "bmi-upper-limit",
+            "relation": "adds",
+            "polarity": "requires",
+            "valueSummary": "BMI < 35 kg/m²",
+            "significance": "high",
+            "structuredValue": {
+              "maxExclusive": 35,
+              "unit": "kg/m²"
+            }
+          },
+          {
+            "requirementId": "sleep-study-recency",
+            "relation": "narrows",
+            "polarity": "requires",
+            "valueSummary": "PSG within 24 months of implant consultation",
+            "significance": "high",
+            "structuredValue": {
+              "windowMonths": 24,
+              "modality": "PSG"
+            }
+          },
+          {
+            "requirementId": "obstructive-predominance-limit",
+            "relation": "adds",
+            "polarity": "requires",
+            "valueSummary": "Central + mixed apneas < 25% of total AHI",
+            "significance": "high",
+            "structuredValue": {
+              "maxPercent": 25
+            }
+          },
+          {
+            "requirementId": "ahi-rdi-threshold",
+            "relation": "differs",
+            "polarity": "requires",
+            "valueSummary": "AHI 15-65 events/hour",
+            "significance": "high",
+            "note": "This is not the same severity branch used in the PAP NCD; HGNS creates its own implant-selection window.",
+            "structuredValue": {
+              "min": 15,
+              "max": 65,
+              "unit": "events/hour",
+              "metric": "AHI"
+            }
+          },
+          {
+            "requirementId": "anatomic-assessment",
+            "relation": "adds",
+            "polarity": "requires",
+            "valueSummary": "DISE must show no complete concentric collapse and no other anatomic compromise",
+            "significance": "high"
+          },
+          {
+            "requirementId": "provider-role",
+            "relation": "adds",
+            "polarity": "requires",
+            "valueSummary": "Sleep physician plus implanting otolaryngologist participate in selection and treatment pathway",
+            "significance": "medium"
+          },
+          {
+            "requirementId": "primary-diagnosis-code",
+            "relation": "codes",
+            "polarity": "codes",
+            "valueSummary": "Primary diagnosis anchored to G47.33 in billing articles",
+            "significance": "medium"
+          },
+          {
+            "requirementId": "cross-reference-local-sleep-policy",
+            "relation": "adds",
+            "polarity": "references",
+            "valueSummary": "Each MAC cross-references a different local sleep-study LCD/article",
+            "significance": "low"
+          },
+          {
+            "requirementId": "cpap-failure-definition",
+            "relation": "adds",
+            "polarity": "requires",
+            "valueSummary": "CPAP failure defined as AHI > 15 despite CPAP usage.",
+            "significance": "high"
+          },
+          {
+            "requirementId": "cpap-intolerance-definition",
+            "relation": "adds",
+            "polarity": "requires",
+            "valueSummary": "CPAP intolerance is <4 hours/night, 5 nights/week, or returned CPAP.",
+            "significance": "high"
+          },
+          {
+            "requirementId": "board-credentialing",
+            "relation": "differs",
+            "polarity": "requires",
+            "valueSummary": "Board-certified or board-eligible otolaryngologist accepted.",
+            "significance": "low"
+          },
+          {
+            "requirementId": "cross-reference-local-sleep-policy",
+            "relation": "differs",
+            "polarity": "references",
+            "valueSummary": "Legacy JF version points to a different local sleep-study policy than the consolidated JE version.",
+            "significance": "low"
+          }
+        ]
+      },
+      {
+        "documentId": "lcd-hgns-palmetto",
+        "displayId": "L38276",
+        "title": "Hypoglossal Nerve Stimulation for Obstructive Sleep Apnea",
+        "type": "LCD",
+        "familyId": "hgns",
+        "familyLabel": "Hypoglossal nerve stimulation",
+        "scopeLevel": "local",
+        "roleInPathway": "HGNS contractor variant",
+        "focus": "Clinically aligned HGNS LCD with the main literal criterion difference in CPAP intolerance wording.",
+        "baselineDocumentIds": [
+          "ncd-sleep-testing",
+          "ncd-cpap"
+        ],
+        "statements": [
+          {
+            "requirementId": "adult-age-threshold",
+            "relation": "adds",
+            "polarity": "requires",
+            "valueSummary": "Age ≥ 22 years",
+            "significance": "high",
+            "structuredValue": {
+              "min": 22,
+              "unit": "years"
+            }
+          },
+          {
+            "requirementId": "bmi-upper-limit",
+            "relation": "adds",
+            "polarity": "requires",
+            "valueSummary": "BMI < 35 kg/m²",
+            "significance": "high",
+            "structuredValue": {
+              "maxExclusive": 35,
+              "unit": "kg/m²"
+            }
+          },
+          {
+            "requirementId": "sleep-study-recency",
+            "relation": "narrows",
+            "polarity": "requires",
+            "valueSummary": "PSG within 24 months of implant consultation",
+            "significance": "high",
+            "structuredValue": {
+              "windowMonths": 24,
+              "modality": "PSG"
+            }
+          },
+          {
+            "requirementId": "obstructive-predominance-limit",
+            "relation": "adds",
+            "polarity": "requires",
+            "valueSummary": "Central + mixed apneas < 25% of total AHI",
+            "significance": "high",
+            "structuredValue": {
+              "maxPercent": 25
+            }
+          },
+          {
+            "requirementId": "ahi-rdi-threshold",
+            "relation": "differs",
+            "polarity": "requires",
+            "valueSummary": "AHI 15-65 events/hour",
+            "significance": "high",
+            "note": "This is not the same severity branch used in the PAP NCD; HGNS creates its own implant-selection window.",
+            "structuredValue": {
+              "min": 15,
+              "max": 65,
+              "unit": "events/hour",
+              "metric": "AHI"
+            }
+          },
+          {
+            "requirementId": "anatomic-assessment",
+            "relation": "adds",
+            "polarity": "requires",
+            "valueSummary": "DISE must show no complete concentric collapse and no other anatomic compromise",
+            "significance": "high"
+          },
+          {
+            "requirementId": "provider-role",
+            "relation": "adds",
+            "polarity": "requires",
+            "valueSummary": "Sleep physician plus implanting otolaryngologist participate in selection and treatment pathway",
+            "significance": "medium"
+          },
+          {
+            "requirementId": "primary-diagnosis-code",
+            "relation": "codes",
+            "polarity": "codes",
+            "valueSummary": "Primary diagnosis anchored to G47.33 in billing articles",
+            "significance": "medium"
+          },
+          {
+            "requirementId": "cross-reference-local-sleep-policy",
+            "relation": "adds",
+            "polarity": "references",
+            "valueSummary": "Each MAC cross-references a different local sleep-study LCD/article",
+            "significance": "low"
+          },
+          {
+            "requirementId": "cpap-failure-definition",
+            "relation": "adds",
+            "polarity": "requires",
+            "valueSummary": "CPAP failure defined as AHI > 15 despite CPAP usage.",
+            "significance": "high"
+          },
+          {
+            "requirementId": "cpap-intolerance-definition",
+            "relation": "differs",
+            "polarity": "requires",
+            "valueSummary": "CPAP intolerance uses <4 hours/night for at least 70% of nights in 1 month, or returned CPAP.",
+            "significance": "high"
+          },
+          {
+            "requirementId": "shared-decision-making",
+            "relation": "adds",
+            "polarity": "requires",
+            "valueSummary": "SDM is documented as a patient-provider conversation, not a multi-provider attestation.",
+            "significance": "medium"
+          },
+          {
+            "requirementId": "board-credentialing",
+            "relation": "adds",
+            "polarity": "requires",
+            "valueSummary": "Implanting surgeon described as board-certified otolaryngologist.",
+            "significance": "low"
+          },
+          {
+            "requirementId": "article-documentation-specificity",
+            "relation": "codes",
+            "polarity": "documents",
+            "valueSummary": "Palmetto article expects specific documentation categories instead of generic record retention language.",
+            "significance": "medium"
+          }
+        ]
+      },
+      {
+        "documentId": "lcd-hgns-ngs",
+        "displayId": "L38387",
+        "title": "Hypoglossal Nerve Stimulation for the Treatment of Obstructive Sleep Apnea",
+        "type": "LCD",
+        "familyId": "hgns",
+        "familyLabel": "Hypoglossal nerve stimulation",
+        "scopeLevel": "local",
+        "roleInPathway": "HGNS contractor variant",
+        "focus": "Clinically aligned HGNS LCD with some unique limitation wording.",
+        "baselineDocumentIds": [
+          "ncd-sleep-testing",
+          "ncd-cpap"
+        ],
+        "statements": [
+          {
+            "requirementId": "adult-age-threshold",
+            "relation": "adds",
+            "polarity": "requires",
+            "valueSummary": "Age ≥ 22 years",
+            "significance": "high",
+            "structuredValue": {
+              "min": 22,
+              "unit": "years"
+            }
+          },
+          {
+            "requirementId": "bmi-upper-limit",
+            "relation": "adds",
+            "polarity": "requires",
+            "valueSummary": "BMI < 35 kg/m²",
+            "significance": "high",
+            "structuredValue": {
+              "maxExclusive": 35,
+              "unit": "kg/m²"
+            }
+          },
+          {
+            "requirementId": "sleep-study-recency",
+            "relation": "narrows",
+            "polarity": "requires",
+            "valueSummary": "PSG within 24 months of implant consultation",
+            "significance": "high",
+            "structuredValue": {
+              "windowMonths": 24,
+              "modality": "PSG"
+            }
+          },
+          {
+            "requirementId": "obstructive-predominance-limit",
+            "relation": "adds",
+            "polarity": "requires",
+            "valueSummary": "Central + mixed apneas < 25% of total AHI",
+            "significance": "high",
+            "structuredValue": {
+              "maxPercent": 25
+            }
+          },
+          {
+            "requirementId": "ahi-rdi-threshold",
+            "relation": "differs",
+            "polarity": "requires",
+            "valueSummary": "AHI 15-65 events/hour",
+            "significance": "high",
+            "note": "This is not the same severity branch used in the PAP NCD; HGNS creates its own implant-selection window.",
+            "structuredValue": {
+              "min": 15,
+              "max": 65,
+              "unit": "events/hour",
+              "metric": "AHI"
+            }
+          },
+          {
+            "requirementId": "anatomic-assessment",
+            "relation": "adds",
+            "polarity": "requires",
+            "valueSummary": "DISE must show no complete concentric collapse and no other anatomic compromise",
+            "significance": "high"
+          },
+          {
+            "requirementId": "provider-role",
+            "relation": "adds",
+            "polarity": "requires",
+            "valueSummary": "Sleep physician plus implanting otolaryngologist participate in selection and treatment pathway",
+            "significance": "medium"
+          },
+          {
+            "requirementId": "primary-diagnosis-code",
+            "relation": "codes",
+            "polarity": "codes",
+            "valueSummary": "Primary diagnosis anchored to G47.33 in billing articles",
+            "significance": "medium"
+          },
+          {
+            "requirementId": "cross-reference-local-sleep-policy",
+            "relation": "adds",
+            "polarity": "references",
+            "valueSummary": "Each MAC cross-references a different local sleep-study LCD/article",
+            "significance": "low"
+          },
+          {
+            "requirementId": "cpap-failure-definition",
+            "relation": "adds",
+            "polarity": "requires",
+            "valueSummary": "CPAP failure defined as AHI > 15 despite CPAP usage.",
+            "significance": "high"
+          },
+          {
+            "requirementId": "cpap-intolerance-definition",
+            "relation": "adds",
+            "polarity": "requires",
+            "valueSummary": "CPAP intolerance is <4 hours/night, 5 nights/week, or returned CPAP.",
+            "significance": "high"
+          },
+          {
+            "requirementId": "shared-decision-making",
+            "relation": "adds",
+            "polarity": "requires",
+            "valueSummary": "SDM is documented as a patient-provider conversation.",
+            "significance": "medium"
+          },
+          {
+            "requirementId": "board-credentialing",
+            "relation": "differs",
+            "polarity": "requires",
+            "valueSummary": "Board-certified or board-eligible otolaryngologist accepted.",
+            "significance": "low"
+          },
+          {
+            "requirementId": "provider-role",
+            "relation": "differs",
+            "polarity": "requires",
+            "valueSummary": "Contraindication wording uniquely narrows neuromuscular disease to conditions affecting the respiratory system.",
+            "significance": "low"
+          }
+        ]
+      },
+      {
+        "documentId": "lcd-hgns-fcso",
+        "displayId": "L38398",
+        "title": "Hypoglossal Nerve Stimulation for the Treatment of Obstructive Sleep Apnea",
+        "type": "LCD",
+        "familyId": "hgns",
+        "familyLabel": "Hypoglossal nerve stimulation",
+        "scopeLevel": "local",
+        "roleInPathway": "HGNS contractor variant",
+        "focus": "Clinically aligned HGNS LCD with board-eligible wording similar to Noridian and NGS.",
+        "baselineDocumentIds": [
+          "ncd-sleep-testing",
+          "ncd-cpap"
+        ],
+        "statements": [
+          {
+            "requirementId": "adult-age-threshold",
+            "relation": "adds",
+            "polarity": "requires",
+            "valueSummary": "Age ≥ 22 years",
+            "significance": "high",
+            "structuredValue": {
+              "min": 22,
+              "unit": "years"
+            }
+          },
+          {
+            "requirementId": "bmi-upper-limit",
+            "relation": "adds",
+            "polarity": "requires",
+            "valueSummary": "BMI < 35 kg/m²",
+            "significance": "high",
+            "structuredValue": {
+              "maxExclusive": 35,
+              "unit": "kg/m²"
+            }
+          },
+          {
+            "requirementId": "sleep-study-recency",
+            "relation": "narrows",
+            "polarity": "requires",
+            "valueSummary": "PSG within 24 months of implant consultation",
+            "significance": "high",
+            "structuredValue": {
+              "windowMonths": 24,
+              "modality": "PSG"
+            }
+          },
+          {
+            "requirementId": "obstructive-predominance-limit",
+            "relation": "adds",
+            "polarity": "requires",
+            "valueSummary": "Central + mixed apneas < 25% of total AHI",
+            "significance": "high",
+            "structuredValue": {
+              "maxPercent": 25
+            }
+          },
+          {
+            "requirementId": "ahi-rdi-threshold",
+            "relation": "differs",
+            "polarity": "requires",
+            "valueSummary": "AHI 15-65 events/hour",
+            "significance": "high",
+            "note": "This is not the same severity branch used in the PAP NCD; HGNS creates its own implant-selection window.",
+            "structuredValue": {
+              "min": 15,
+              "max": 65,
+              "unit": "events/hour",
+              "metric": "AHI"
+            }
+          },
+          {
+            "requirementId": "anatomic-assessment",
+            "relation": "adds",
+            "polarity": "requires",
+            "valueSummary": "DISE must show no complete concentric collapse and no other anatomic compromise",
+            "significance": "high"
+          },
+          {
+            "requirementId": "provider-role",
+            "relation": "adds",
+            "polarity": "requires",
+            "valueSummary": "Sleep physician plus implanting otolaryngologist participate in selection and treatment pathway",
+            "significance": "medium"
+          },
+          {
+            "requirementId": "primary-diagnosis-code",
+            "relation": "codes",
+            "polarity": "codes",
+            "valueSummary": "Primary diagnosis anchored to G47.33 in billing articles",
+            "significance": "medium"
+          },
+          {
+            "requirementId": "cross-reference-local-sleep-policy",
+            "relation": "adds",
+            "polarity": "references",
+            "valueSummary": "Each MAC cross-references a different local sleep-study LCD/article",
+            "significance": "low"
+          },
+          {
+            "requirementId": "cpap-failure-definition",
+            "relation": "adds",
+            "polarity": "requires",
+            "valueSummary": "CPAP failure defined as AHI > 15 despite CPAP usage.",
+            "significance": "high"
+          },
+          {
+            "requirementId": "cpap-intolerance-definition",
+            "relation": "adds",
+            "polarity": "requires",
+            "valueSummary": "CPAP intolerance is <4 hours/night, 5 nights/week, or returned CPAP.",
+            "significance": "high"
+          },
+          {
+            "requirementId": "shared-decision-making",
+            "relation": "adds",
+            "polarity": "requires",
+            "valueSummary": "SDM is documented as a patient-provider conversation.",
+            "significance": "medium"
+          },
+          {
+            "requirementId": "board-credentialing",
+            "relation": "differs",
+            "polarity": "requires",
+            "valueSummary": "Board-certified or board-eligible otolaryngologist accepted.",
+            "significance": "low"
+          }
+        ]
+      },
+      {
+        "documentId": "lcd-hgns-novitas",
+        "displayId": "L38385",
+        "title": "Hypoglossal Nerve Stimulation for the Treatment of Obstructive Sleep Apnea",
+        "type": "LCD",
+        "familyId": "hgns",
+        "familyLabel": "Hypoglossal nerve stimulation",
+        "scopeLevel": "local",
+        "roleInPathway": "HGNS contractor variant",
+        "focus": "Clinically aligned HGNS LCD with common family language and no special CPAP-intolerance deviation.",
+        "baselineDocumentIds": [
+          "ncd-sleep-testing",
+          "ncd-cpap"
+        ],
+        "statements": [
+          {
+            "requirementId": "adult-age-threshold",
+            "relation": "adds",
+            "polarity": "requires",
+            "valueSummary": "Age ≥ 22 years",
+            "significance": "high",
+            "structuredValue": {
+              "min": 22,
+              "unit": "years"
+            }
+          },
+          {
+            "requirementId": "bmi-upper-limit",
+            "relation": "adds",
+            "polarity": "requires",
+            "valueSummary": "BMI < 35 kg/m²",
+            "significance": "high",
+            "structuredValue": {
+              "maxExclusive": 35,
+              "unit": "kg/m²"
+            }
+          },
+          {
+            "requirementId": "sleep-study-recency",
+            "relation": "narrows",
+            "polarity": "requires",
+            "valueSummary": "PSG within 24 months of implant consultation",
+            "significance": "high",
+            "structuredValue": {
+              "windowMonths": 24,
+              "modality": "PSG"
+            }
+          },
+          {
+            "requirementId": "obstructive-predominance-limit",
+            "relation": "adds",
+            "polarity": "requires",
+            "valueSummary": "Central + mixed apneas < 25% of total AHI",
+            "significance": "high",
+            "structuredValue": {
+              "maxPercent": 25
+            }
+          },
+          {
+            "requirementId": "ahi-rdi-threshold",
+            "relation": "differs",
+            "polarity": "requires",
+            "valueSummary": "AHI 15-65 events/hour",
+            "significance": "high",
+            "note": "This is not the same severity branch used in the PAP NCD; HGNS creates its own implant-selection window.",
+            "structuredValue": {
+              "min": 15,
+              "max": 65,
+              "unit": "events/hour",
+              "metric": "AHI"
+            }
+          },
+          {
+            "requirementId": "anatomic-assessment",
+            "relation": "adds",
+            "polarity": "requires",
+            "valueSummary": "DISE must show no complete concentric collapse and no other anatomic compromise",
+            "significance": "high"
+          },
+          {
+            "requirementId": "provider-role",
+            "relation": "adds",
+            "polarity": "requires",
+            "valueSummary": "Sleep physician plus implanting otolaryngologist participate in selection and treatment pathway",
+            "significance": "medium"
+          },
+          {
+            "requirementId": "primary-diagnosis-code",
+            "relation": "codes",
+            "polarity": "codes",
+            "valueSummary": "Primary diagnosis anchored to G47.33 in billing articles",
+            "significance": "medium"
+          },
+          {
+            "requirementId": "cross-reference-local-sleep-policy",
+            "relation": "adds",
+            "polarity": "references",
+            "valueSummary": "Each MAC cross-references a different local sleep-study LCD/article",
+            "significance": "low"
+          },
+          {
+            "requirementId": "cpap-failure-definition",
+            "relation": "adds",
+            "polarity": "requires",
+            "valueSummary": "CPAP failure defined as AHI > 15 despite CPAP usage.",
+            "significance": "high"
+          },
+          {
+            "requirementId": "cpap-intolerance-definition",
+            "relation": "adds",
+            "polarity": "requires",
+            "valueSummary": "CPAP intolerance is <4 hours/night, 5 nights/week, or returned CPAP.",
+            "significance": "high"
+          },
+          {
+            "requirementId": "shared-decision-making",
+            "relation": "adds",
+            "polarity": "requires",
+            "valueSummary": "SDM is documented as a patient-provider conversation.",
+            "significance": "medium"
+          },
+          {
+            "requirementId": "board-credentialing",
+            "relation": "adds",
+            "polarity": "requires",
+            "valueSummary": "Implanting surgeon described as board-certified otolaryngologist.",
+            "significance": "low"
+          }
+        ]
+      },
+      {
+        "documentId": "article-hgns-wps",
+        "displayId": "A57944",
+        "title": "Billing and Coding: Hypoglossal Nerve Stimulation for Treatment of Obstructive Sleep Apnea",
+        "type": "Article",
+        "familyId": "hgns",
+        "familyLabel": "Hypoglossal nerve stimulation",
+        "scopeLevel": "billing",
+        "roleInPathway": "HGNS billing article",
+        "focus": "WPS claim implementation for HGNS.",
+        "baselineDocumentIds": [
+          "lcd-hgns-wps"
+        ],
+        "statements": [
+          {
+            "requirementId": "procedure-coverage-lane",
+            "relation": "codes",
+            "polarity": "codes",
+            "valueSummary": "CPT 64582/64583/64584 are the live procedure lane.",
+            "significance": "medium"
+          },
+          {
+            "requirementId": "primary-diagnosis-code",
+            "relation": "codes",
+            "polarity": "codes",
+            "valueSummary": "Claims anchor on G47.33.",
+            "significance": "medium"
+          },
+          {
+            "requirementId": "secondary-bmi-code-ceiling",
+            "relation": "codes",
+            "polarity": "codes",
+            "valueSummary": "BMI code lane aligns to BMI < 35.",
+            "significance": "medium"
+          },
+          {
+            "requirementId": "article-documentation-specificity",
+            "relation": "codes",
+            "polarity": "documents",
+            "valueSummary": "Generic article record-retention language.",
+            "significance": "low"
+          }
+        ]
+      },
+      {
+        "documentId": "article-hgns-cgs",
+        "displayId": "A57149",
+        "title": "Billing and Coding: Hypoglossal Nerve Stimulation for Treatment of Obstructive Sleep Apnea",
+        "type": "Article",
+        "familyId": "hgns",
+        "familyLabel": "Hypoglossal nerve stimulation",
+        "scopeLevel": "billing",
+        "roleInPathway": "HGNS billing article",
+        "focus": "CGS claim implementation for HGNS.",
+        "baselineDocumentIds": [
+          "lcd-hgns-cgs"
+        ],
+        "statements": [
+          {
+            "requirementId": "procedure-coverage-lane",
+            "relation": "codes",
+            "polarity": "codes",
+            "valueSummary": "CPT 64582/64583/64584 are the live procedure lane.",
+            "significance": "medium"
+          },
+          {
+            "requirementId": "primary-diagnosis-code",
+            "relation": "codes",
+            "polarity": "codes",
+            "valueSummary": "Claims anchor on G47.33.",
+            "significance": "medium"
+          },
+          {
+            "requirementId": "secondary-bmi-code-ceiling",
+            "relation": "codes",
+            "polarity": "codes",
+            "valueSummary": "BMI code lane aligns to BMI < 35.",
+            "significance": "medium"
+          },
+          {
+            "requirementId": "article-documentation-specificity",
+            "relation": "codes",
+            "polarity": "documents",
+            "valueSummary": "Generic article record-retention language.",
+            "significance": "low"
+          }
+        ]
+      },
+      {
+        "documentId": "article-hgns-noridian",
+        "displayId": "A57948",
+        "title": "Billing and Coding: Hypoglossal Nerve Stimulation for the Treatment of Obstructive Sleep Apnea",
+        "type": "Article",
+        "familyId": "hgns",
+        "familyLabel": "Hypoglossal nerve stimulation",
+        "scopeLevel": "billing",
+        "roleInPathway": "HGNS billing article",
+        "focus": "Current Noridian JE claim implementation with the largest BMI-coding spread.",
+        "baselineDocumentIds": [
+          "lcd-hgns-noridian"
+        ],
+        "statements": [
+          {
+            "requirementId": "procedure-coverage-lane",
+            "relation": "codes",
+            "polarity": "codes",
+            "valueSummary": "CPT 64582/64583/64584 are the live procedure lane.",
+            "significance": "medium"
+          },
+          {
+            "requirementId": "primary-diagnosis-code",
+            "relation": "codes",
+            "polarity": "codes",
+            "valueSummary": "Claims anchor on G47.33.",
+            "significance": "medium"
+          },
+          {
+            "requirementId": "secondary-bmi-code-ceiling",
+            "relation": "differs",
+            "polarity": "codes",
+            "valueSummary": "BMI code lane extends through Z68.39, beyond the clinical BMI < 35 gate.",
+            "significance": "high"
+          },
+          {
+            "requirementId": "mutual-exclusion-code-rules",
+            "relation": "differs",
+            "polarity": "codes",
+            "valueSummary": "Explicit do-not-bill-together rules for 64582/64583/64584 combinations.",
+            "significance": "medium"
+          },
+          {
+            "requirementId": "modifier-guidance",
+            "relation": "differs",
+            "polarity": "codes",
+            "valueSummary": "Modifier 52 guidance for partial revision/removal.",
+            "significance": "medium"
+          }
+        ]
+      },
+      {
+        "documentId": "article-hgns-noridian-jf-legacy",
+        "displayId": "A57949",
+        "title": "Billing and Coding: Hypoglossal Nerve Stimulation for the Treatment of Obstructive Sleep Apnea",
+        "type": "Article",
+        "familyId": "hgns",
+        "familyLabel": "Hypoglossal nerve stimulation",
+        "scopeLevel": "billing",
+        "roleInPathway": "HGNS billing legacy article",
+        "focus": "Retired Noridian JF billing article retained because it exposes the legacy implant code lane.",
+        "baselineDocumentIds": [
+          "lcd-hgns-noridian-jf-legacy"
+        ],
+        "statements": [
+          {
+            "requirementId": "procedure-coverage-lane",
+            "relation": "codes",
+            "polarity": "codes",
+            "valueSummary": "CPT 64582/64583/64584 are present.",
+            "significance": "medium"
+          },
+          {
+            "requirementId": "legacy-code-reference",
+            "relation": "differs",
+            "polarity": "codes",
+            "valueSummary": "Legacy CPT 64568 appears in the retired article only.",
+            "significance": "high"
+          },
+          {
+            "requirementId": "secondary-bmi-code-ceiling",
+            "relation": "differs",
+            "polarity": "codes",
+            "valueSummary": "BMI code lane extends through Z68.39, beyond the clinical BMI < 35 gate.",
+            "significance": "high"
+          },
+          {
+            "requirementId": "mutual-exclusion-code-rules",
+            "relation": "differs",
+            "polarity": "codes",
+            "valueSummary": "Explicit do-not-bill-together rules present.",
+            "significance": "medium"
+          }
+        ]
+      },
+      {
+        "documentId": "article-hgns-palmetto",
+        "displayId": "A58075",
+        "title": "Billing and Coding: Hypoglossal Nerve Stimulation for Obstructive Sleep Apnea",
+        "type": "Article",
+        "familyId": "hgns",
+        "familyLabel": "Hypoglossal nerve stimulation",
+        "scopeLevel": "billing",
+        "roleInPathway": "HGNS billing article",
+        "focus": "Palmetto billing article with the most specific documentation instructions.",
+        "baselineDocumentIds": [
+          "lcd-hgns-palmetto"
+        ],
+        "statements": [
+          {
+            "requirementId": "procedure-coverage-lane",
+            "relation": "codes",
+            "polarity": "codes",
+            "valueSummary": "CPT 64582/64583/64584 are the live procedure lane.",
+            "significance": "medium"
+          },
+          {
+            "requirementId": "primary-diagnosis-code",
+            "relation": "codes",
+            "polarity": "codes",
+            "valueSummary": "Claims anchor on G47.33.",
+            "significance": "medium"
+          },
+          {
+            "requirementId": "secondary-bmi-code-ceiling",
+            "relation": "codes",
+            "polarity": "codes",
+            "valueSummary": "BMI code lane stops at Z68.34 and stays aligned to BMI < 35.",
+            "significance": "medium"
+          },
+          {
+            "requirementId": "modifier-guidance",
+            "relation": "differs",
+            "polarity": "codes",
+            "valueSummary": "Modifier 52 guidance present for partial revision/removal.",
+            "significance": "medium"
+          },
+          {
+            "requirementId": "article-documentation-specificity",
+            "relation": "differs",
+            "polarity": "documents",
+            "valueSummary": "Explicit documentation categories: symptoms, polysomnography, DISE, BMI, and related evidence.",
+            "significance": "high"
+          }
+        ]
+      },
+      {
+        "documentId": "article-hgns-fcso",
+        "displayId": "A56953",
+        "title": "Billing and Coding: Hypoglossal Nerve Stimulation for the Treatment of Obstructive Sleep Apnea",
+        "type": "Article",
+        "familyId": "hgns",
+        "familyLabel": "Hypoglossal nerve stimulation",
+        "scopeLevel": "billing",
+        "roleInPathway": "HGNS billing article",
+        "focus": "First Coast claim implementation with an additional text reference to CPT 61886.",
+        "baselineDocumentIds": [
+          "lcd-hgns-fcso"
+        ],
+        "statements": [
+          {
+            "requirementId": "procedure-coverage-lane",
+            "relation": "codes",
+            "polarity": "codes",
+            "valueSummary": "CPT 64582/64583/64584 are the live procedure lane.",
+            "significance": "medium"
+          },
+          {
+            "requirementId": "primary-diagnosis-code",
+            "relation": "codes",
+            "polarity": "codes",
+            "valueSummary": "Claims anchor on G47.33.",
+            "significance": "medium"
+          },
+          {
+            "requirementId": "secondary-bmi-code-ceiling",
+            "relation": "codes",
+            "polarity": "codes",
+            "valueSummary": "BMI code lane stops at Z68.34 and stays aligned to BMI < 35.",
+            "significance": "medium"
+          },
+          {
+            "requirementId": "legacy-code-reference",
+            "relation": "differs",
+            "polarity": "codes",
+            "valueSummary": "Text mentions CPT 61886 for pulse-generator replacement even though it is not in the main code table.",
+            "significance": "low"
+          }
+        ]
+      },
+      {
+        "documentId": "article-hgns-novitas",
+        "displayId": "A56938",
+        "title": "Billing and Coding: Hypoglossal Nerve Stimulation for the Treatment of Obstructive Sleep Apnea",
+        "type": "Article",
+        "familyId": "hgns",
+        "familyLabel": "Hypoglossal nerve stimulation",
+        "scopeLevel": "billing",
+        "roleInPathway": "HGNS billing article",
+        "focus": "Novitas claim implementation with a similar 61886 text reference.",
+        "baselineDocumentIds": [
+          "lcd-hgns-novitas"
+        ],
+        "statements": [
+          {
+            "requirementId": "procedure-coverage-lane",
+            "relation": "codes",
+            "polarity": "codes",
+            "valueSummary": "CPT 64582/64583/64584 are the live procedure lane.",
+            "significance": "medium"
+          },
+          {
+            "requirementId": "primary-diagnosis-code",
+            "relation": "codes",
+            "polarity": "codes",
+            "valueSummary": "Claims anchor on G47.33.",
+            "significance": "medium"
+          },
+          {
+            "requirementId": "secondary-bmi-code-ceiling",
+            "relation": "codes",
+            "polarity": "codes",
+            "valueSummary": "BMI code lane stops at Z68.34 and stays aligned to BMI < 35.",
+            "significance": "medium"
+          },
+          {
+            "requirementId": "legacy-code-reference",
+            "relation": "differs",
+            "polarity": "codes",
+            "valueSummary": "Text mentions CPT 61886 for pulse-generator replacement even though it is not in the main code table.",
+            "significance": "low"
+          }
+        ]
+      }
+    ],
+    "familyDeltaSummaries": [
+      {
+        "familyId": "sleep-testing",
+        "baselineDocumentIds": [
+          "ncd-sleep-testing"
+        ],
+        "localDocumentIds": [],
+        "counts": {
+          "baseline": 4,
+          "reuses": 0,
+          "narrows": 0,
+          "operationalizes": 0,
+          "adds": 0,
+          "differs": 0,
+          "codes": 0
+        },
+        "takeaway": "Pure national baseline. Downstream therapies inherit this diagnostic floor and then narrow it."
+      },
+      {
+        "familyId": "pap-therapy",
+        "baselineDocumentIds": [
+          "ncd-cpap",
+          "ncd-sleep-testing"
+        ],
+        "localDocumentIds": [
+          "lcd-pap-dme"
+        ],
+        "counts": {
+          "baseline": 5,
+          "reuses": 2,
+          "narrows": 3,
+          "operationalizes": 3,
+          "adds": 0,
+          "differs": 0,
+          "codes": 0
+        },
+        "takeaway": "PAP LCD does not reinvent OSA; it mostly operationalizes and narrows the national CPAP rule."
+      },
+      {
+        "familyId": "oral-appliance",
+        "baselineDocumentIds": [
+          "ncd-sleep-testing",
+          "ncd-cpap"
+        ],
+        "localDocumentIds": [
+          "lcd-oral-appliance"
+        ],
+        "counts": {
+          "baseline": 0,
+          "reuses": 2,
+          "narrows": 3,
+          "operationalizes": 0,
+          "adds": 2,
+          "differs": 1,
+          "codes": 0
+        },
+        "takeaway": "Local branch reuses the national diagnostic logic but adds a new device lane and severe-disease PAP step-therapy path."
+      },
+      {
+        "familyId": "surgery",
+        "baselineDocumentIds": [
+          "ncd-sleep-testing",
+          "ncd-cpap"
+        ],
+        "localDocumentIds": [
+          "lcd-surgery-wps",
+          "article-surgery-wps"
+        ],
+        "counts": {
+          "baseline": 0,
+          "reuses": 0,
+          "narrows": 3,
+          "operationalizes": 0,
+          "adds": 3,
+          "differs": 1,
+          "codes": 1
+        },
+        "takeaway": "Surgery is genuinely narrower than the national OSA floor and carries explicit non-covered procedures."
+      },
+      {
+        "familyId": "hgns",
+        "baselineDocumentIds": [
+          "ncd-sleep-testing",
+          "ncd-cpap"
+        ],
+        "localDocumentIds": [
+          "lcd-hgns-wps",
+          "lcd-hgns-cgs",
+          "lcd-hgns-noridian",
+          "lcd-hgns-noridian-jf-legacy",
+          "lcd-hgns-palmetto",
+          "lcd-hgns-ngs",
+          "lcd-hgns-fcso",
+          "lcd-hgns-novitas"
+        ],
+        "counts": {
+          "baseline": 0,
+          "reuses": 0,
+          "narrows": 1,
+          "operationalizes": 0,
+          "adds": 6,
+          "differs": 4,
+          "codes": 5
+        },
+        "takeaway": "HGNS is mostly a new local implant-selection framework layered on top of the older national OSA diagnostic floor, with some real MAC-level wording and billing variation."
+      }
+    ],
+    "familyLineage": {
+      "columns": [
+        {
+          "familyId": "sleep-testing",
+          "label": "Sleep testing"
+        },
+        {
+          "familyId": "pap-therapy",
+          "label": "PAP / CPAP"
+        },
+        {
+          "familyId": "oral-appliance",
+          "label": "Oral appliance"
+        },
+        {
+          "familyId": "surgery",
+          "label": "Surgery"
+        },
+        {
+          "familyId": "hgns",
+          "label": "Hypoglossal nerve stimulation"
+        }
+      ],
+      "rows": [
+        {
+          "requirementId": "valid-sleep-test-modality",
+          "whyItMatters": "Defines what counts as valid diagnostic evidence before any therapy branch is even considered.",
+          "cells": [
+            {
+              "familyId": "sleep-testing",
+              "relation": "baseline",
+              "valueSummary": "Type I-IV and PAT-capable multi-channel pathways are the diagnostic floor.",
+              "sourceDocumentIds": [
+                "ncd-sleep-testing"
+              ]
+            },
+            {
+              "familyId": "pap-therapy",
+              "relation": "reuses",
+              "valueSummary": "Uses the national Medicare-valid sleep-testing floor.",
+              "sourceDocumentIds": [
+                "ncd-cpap",
+                "ncd-sleep-testing"
+              ]
+            },
+            {
+              "familyId": "oral-appliance",
+              "relation": "reuses",
+              "valueSummary": "Uses a Medicare-covered sleep test without redefining the test taxonomy.",
+              "sourceDocumentIds": [
+                "lcd-oral-appliance",
+                "ncd-sleep-testing"
+              ]
+            },
+            {
+              "familyId": "surgery",
+              "relation": "narrows",
+              "valueSummary": "Requires lab-based AASM-certified sleep evaluation rather than any qualifying home-study path.",
+              "sourceDocumentIds": [
+                "lcd-surgery-wps"
+              ]
+            },
+            {
+              "familyId": "hgns",
+              "relation": "narrows",
+              "valueSummary": "Requires PSG and adds a recency gate, collapsing the broader national test menu.",
+              "sourceDocumentIds": [
+                "lcd-hgns-wps",
+                "lcd-hgns-palmetto"
+              ]
+            }
+          ]
+        },
+        {
+          "requirementId": "ahi-rdi-threshold",
+          "whyItMatters": "Shows where local policies truly diverge from the national severity logic.",
+          "cells": [
+            {
+              "familyId": "sleep-testing",
+              "relation": "baseline",
+              "valueSummary": "Diagnostic NCD itself does not set treatment severity gates.",
+              "sourceDocumentIds": [
+                "ncd-sleep-testing"
+              ]
+            },
+            {
+              "familyId": "pap-therapy",
+              "relation": "baseline",
+              "valueSummary": "AHI/RDI ≥15 direct, or 5-14 with symptoms/comorbidities.",
+              "sourceDocumentIds": [
+                "ncd-cpap"
+              ]
+            },
+            {
+              "familyId": "oral-appliance",
+              "relation": "differs",
+              "valueSummary": "5-30 can qualify directly; >30 pushes into PAP failure/intolerance logic.",
+              "sourceDocumentIds": [
+                "lcd-oral-appliance"
+              ]
+            },
+            {
+              "familyId": "surgery",
+              "relation": "differs",
+              "valueSummary": "RDI ≥15 only; no mild-comorbidity branch.",
+              "sourceDocumentIds": [
+                "lcd-surgery-wps"
+              ]
+            },
+            {
+              "familyId": "hgns",
+              "relation": "differs",
+              "valueSummary": "AHI 15-65 plus obstructive-event predominance.",
+              "sourceDocumentIds": [
+                "lcd-hgns-noridian",
+                "lcd-hgns-palmetto"
+              ]
+            }
+          ]
+        },
+        {
+          "requirementId": "cpap-intolerance-definition",
+          "whyItMatters": "The downstream pathways use CPAP intolerance differently, and HGNS contractors do not define it identically.",
+          "cells": [
+            {
+              "familyId": "sleep-testing",
+              "relation": "baseline",
+              "valueSummary": "Not part of the diagnostic floor.",
+              "sourceDocumentIds": []
+            },
+            {
+              "familyId": "pap-therapy",
+              "relation": "baseline",
+              "valueSummary": "Not applicable because PAP is the first-line therapy.",
+              "sourceDocumentIds": []
+            },
+            {
+              "familyId": "oral-appliance",
+              "relation": "adds",
+              "valueSummary": "Only matters on the severe-OAS branch or when PAP is contraindicated.",
+              "sourceDocumentIds": [
+                "lcd-oral-appliance"
+              ]
+            },
+            {
+              "familyId": "surgery",
+              "relation": "adds",
+              "valueSummary": "Used as part of failed CPAP/non-invasive treatment pathway.",
+              "sourceDocumentIds": [
+                "lcd-surgery-wps"
+              ]
+            },
+            {
+              "familyId": "hgns",
+              "relation": "differs",
+              "valueSummary": "Core rule exists in every HGNS LCD, but Palmetto uses a 70%-of-nights metric while others use 5 nights/week language.",
+              "sourceDocumentIds": [
+                "lcd-hgns-palmetto",
+                "lcd-hgns-noridian",
+                "lcd-hgns-wps"
+              ]
+            }
+          ]
+        },
+        {
+          "requirementId": "objective-adherence-threshold",
+          "whyItMatters": "A good example of local operationalization versus a different therapy-selection definition.",
+          "cells": [
+            {
+              "familyId": "sleep-testing",
+              "relation": "baseline",
+              "valueSummary": "Not applicable.",
+              "sourceDocumentIds": []
+            },
+            {
+              "familyId": "pap-therapy",
+              "relation": "operationalizes",
+              "valueSummary": "Continuation requires ≥4 hours/night on ≥70% of nights plus clinical re-evaluation.",
+              "sourceDocumentIds": [
+                "lcd-pap-dme"
+              ]
+            },
+            {
+              "familyId": "oral-appliance",
+              "relation": "baseline",
+              "valueSummary": "No machine-derived adherence threshold.",
+              "sourceDocumentIds": []
+            },
+            {
+              "familyId": "surgery",
+              "relation": "baseline",
+              "valueSummary": "No machine-derived adherence threshold.",
+              "sourceDocumentIds": []
+            },
+            {
+              "familyId": "hgns",
+              "relation": "differs",
+              "valueSummary": "Appears inside some MACs’ CPAP-intolerance definition rather than as a continuation rule.",
+              "sourceDocumentIds": [
+                "lcd-hgns-palmetto",
+                "lcd-hgns-noridian"
+              ]
+            }
+          ]
+        },
+        {
+          "requirementId": "anatomic-assessment",
+          "whyItMatters": "Downstream OSA therapies diverge sharply once anatomy becomes a selection gate.",
+          "cells": [
+            {
+              "familyId": "sleep-testing",
+              "relation": "baseline",
+              "valueSummary": "No anatomy gate.",
+              "sourceDocumentIds": []
+            },
+            {
+              "familyId": "pap-therapy",
+              "relation": "baseline",
+              "valueSummary": "No anatomy gate.",
+              "sourceDocumentIds": []
+            },
+            {
+              "familyId": "oral-appliance",
+              "relation": "baseline",
+              "valueSummary": "No formal anatomy gate in the LCD.",
+              "sourceDocumentIds": [
+                "lcd-oral-appliance"
+              ]
+            },
+            {
+              "familyId": "surgery",
+              "relation": "adds",
+              "valueSummary": "Obstruction site identification is required to match the operation to the anatomy.",
+              "sourceDocumentIds": [
+                "lcd-surgery-wps"
+              ]
+            },
+            {
+              "familyId": "hgns",
+              "relation": "adds",
+              "valueSummary": "DISE with no complete concentric collapse plus no other anatomy compromise.",
+              "sourceDocumentIds": [
+                "lcd-hgns-wps",
+                "lcd-hgns-palmetto"
+              ]
+            }
+          ]
+        },
+        {
+          "requirementId": "provider-role",
+          "whyItMatters": "Much of the real local coverage spread lives in who is allowed to furnish or support the therapy.",
+          "cells": [
+            {
+              "familyId": "sleep-testing",
+              "relation": "baseline",
+              "valueSummary": "Treating practitioner order governs entry.",
+              "sourceDocumentIds": [
+                "ncd-sleep-testing"
+              ]
+            },
+            {
+              "familyId": "pap-therapy",
+              "relation": "operationalizes",
+              "valueSummary": "Treating practitioner handles evaluation, re-evaluation, and DME ordering.",
+              "sourceDocumentIds": [
+                "lcd-pap-dme"
+              ]
+            },
+            {
+              "familyId": "oral-appliance",
+              "relation": "adds",
+              "valueSummary": "Treating practitioner orders; licensed dentist supplies and bills the device.",
+              "sourceDocumentIds": [
+                "lcd-oral-appliance"
+              ]
+            },
+            {
+              "familyId": "surgery",
+              "relation": "adds",
+              "valueSummary": "Qualified surgeon in an appropriate operative setting.",
+              "sourceDocumentIds": [
+                "lcd-surgery-wps"
+              ]
+            },
+            {
+              "familyId": "hgns",
+              "relation": "adds",
+              "valueSummary": "Sleep physician, implanting otolaryngologist, and DISE-capable surgeon all become relevant actors.",
+              "sourceDocumentIds": [
+                "lcd-hgns-noridian",
+                "lcd-hgns-wps"
+              ]
+            }
+          ]
+        },
+        {
+          "requirementId": "secondary-bmi-code-ceiling",
+          "whyItMatters": "Shows where billing articles can diverge from the clinical text and create adjudication ambiguity.",
+          "cells": [
+            {
+              "familyId": "sleep-testing",
+              "relation": "baseline",
+              "valueSummary": "No therapy-specific BMI code lane.",
+              "sourceDocumentIds": []
+            },
+            {
+              "familyId": "pap-therapy",
+              "relation": "baseline",
+              "valueSummary": "No BMI code ceiling in the CPAP NCD/LCD pair.",
+              "sourceDocumentIds": []
+            },
+            {
+              "familyId": "oral-appliance",
+              "relation": "baseline",
+              "valueSummary": "No BMI coding rule.",
+              "sourceDocumentIds": []
+            },
+            {
+              "familyId": "surgery",
+              "relation": "baseline",
+              "valueSummary": "No central BMI coding lane in this curated surgery slice.",
+              "sourceDocumentIds": [
+                "article-surgery-wps"
+              ]
+            },
+            {
+              "familyId": "hgns",
+              "relation": "differs",
+              "valueSummary": "Noridian billing extends to Z68.39 while other MACs stop at Z68.34.",
+              "sourceDocumentIds": [
+                "article-hgns-noridian",
+                "article-hgns-palmetto",
+                "article-hgns-fcso",
+                "article-hgns-novitas"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "contractorVariance": {
+      "familyId": "hgns",
+      "dimensions": [
+        {
+          "id": "clinical-text",
+          "label": "Clinical text deltas"
+        },
+        {
+          "id": "provider-wording",
+          "label": "Provider wording"
+        },
+        {
+          "id": "billing",
+          "label": "Billing / article deltas"
+        }
+      ],
+      "rows": [
+        {
+          "requirementId": "cpap-intolerance-definition",
+          "label": "CPAP intolerance wording",
+          "dimensionId": "clinical-text",
+          "takeaway": "Every HGNS LCD requires CPAP failure/intolerance, but Palmetto uses a different measurement window than the other MACs.",
+          "contractorValues": [
+            {
+              "contractorId": "wps",
+              "relation": "adds",
+              "valueSummary": "<4 h/night, 5 nights/week",
+              "sourceDocumentId": "lcd-hgns-wps"
+            },
+            {
+              "contractorId": "cgs",
+              "relation": "adds",
+              "valueSummary": "<4 h/night, 5 nights/week",
+              "sourceDocumentId": "lcd-hgns-cgs"
+            },
+            {
+              "contractorId": "noridian-je",
+              "relation": "adds",
+              "valueSummary": "<4 h/night, 5 nights/week or returned CPAP",
+              "sourceDocumentId": "lcd-hgns-noridian"
+            },
+            {
+              "contractorId": "noridian-jf",
+              "relation": "adds",
+              "valueSummary": "<4 h/night, 5 nights/week or returned CPAP",
+              "sourceDocumentId": "lcd-hgns-noridian-jf-legacy"
+            },
+            {
+              "contractorId": "palmetto",
+              "relation": "differs",
+              "valueSummary": "<4 h/night for 70% of nights in 1 month",
+              "sourceDocumentId": "lcd-hgns-palmetto"
+            },
+            {
+              "contractorId": "ngs",
+              "relation": "adds",
+              "valueSummary": "<4 h/night, 5 nights/week or returned CPAP",
+              "sourceDocumentId": "lcd-hgns-ngs"
+            },
+            {
+              "contractorId": "first-coast",
+              "relation": "adds",
+              "valueSummary": "<4 h/night, 5 nights/week or returned CPAP",
+              "sourceDocumentId": "lcd-hgns-fcso"
+            },
+            {
+              "contractorId": "novitas",
+              "relation": "adds",
+              "valueSummary": "<4 h/night, 5 nights/week or returned CPAP",
+              "sourceDocumentId": "lcd-hgns-novitas"
+            }
+          ]
+        },
+        {
+          "requirementId": "shared-decision-making",
+          "label": "SDM definition",
+          "dimensionId": "clinical-text",
+          "takeaway": "WPS is the outlier; most HGNS LCDs define SDM as a patient-provider conversation, not a dual-physician attestation.",
+          "contractorValues": [
+            {
+              "contractorId": "wps",
+              "relation": "differs",
+              "valueSummary": "Referring + implanting physician documentation",
+              "sourceDocumentId": "lcd-hgns-wps"
+            },
+            {
+              "contractorId": "cgs",
+              "relation": "adds",
+              "valueSummary": "Patient-provider documented conversation",
+              "sourceDocumentId": "lcd-hgns-cgs"
+            },
+            {
+              "contractorId": "noridian-je",
+              "relation": "adds",
+              "valueSummary": "Patient-provider documented conversation",
+              "sourceDocumentId": "lcd-hgns-noridian"
+            },
+            {
+              "contractorId": "noridian-jf",
+              "relation": "adds",
+              "valueSummary": "Patient-provider documented conversation",
+              "sourceDocumentId": "lcd-hgns-noridian-jf-legacy"
+            },
+            {
+              "contractorId": "palmetto",
+              "relation": "adds",
+              "valueSummary": "Patient-provider documented conversation",
+              "sourceDocumentId": "lcd-hgns-palmetto"
+            },
+            {
+              "contractorId": "ngs",
+              "relation": "adds",
+              "valueSummary": "Patient-provider documented conversation",
+              "sourceDocumentId": "lcd-hgns-ngs"
+            },
+            {
+              "contractorId": "first-coast",
+              "relation": "adds",
+              "valueSummary": "Patient-provider documented conversation",
+              "sourceDocumentId": "lcd-hgns-fcso"
+            },
+            {
+              "contractorId": "novitas",
+              "relation": "adds",
+              "valueSummary": "Patient-provider documented conversation",
+              "sourceDocumentId": "lcd-hgns-novitas"
+            }
+          ]
+        },
+        {
+          "requirementId": "board-credentialing",
+          "label": "Board-eligible wording",
+          "dimensionId": "provider-wording",
+          "takeaway": "Some MACs accept board-eligible surgeons while others say board-certified only.",
+          "contractorValues": [
+            {
+              "contractorId": "wps",
+              "relation": "adds",
+              "valueSummary": "Board-certified",
+              "sourceDocumentId": "lcd-hgns-wps"
+            },
+            {
+              "contractorId": "cgs",
+              "relation": "adds",
+              "valueSummary": "Board-certified",
+              "sourceDocumentId": "lcd-hgns-cgs"
+            },
+            {
+              "contractorId": "noridian-je",
+              "relation": "differs",
+              "valueSummary": "Board-certified or board-eligible",
+              "sourceDocumentId": "lcd-hgns-noridian"
+            },
+            {
+              "contractorId": "noridian-jf",
+              "relation": "differs",
+              "valueSummary": "Board-certified or board-eligible",
+              "sourceDocumentId": "lcd-hgns-noridian-jf-legacy"
+            },
+            {
+              "contractorId": "palmetto",
+              "relation": "adds",
+              "valueSummary": "Board-certified",
+              "sourceDocumentId": "lcd-hgns-palmetto"
+            },
+            {
+              "contractorId": "ngs",
+              "relation": "differs",
+              "valueSummary": "Board-certified or board-eligible",
+              "sourceDocumentId": "lcd-hgns-ngs"
+            },
+            {
+              "contractorId": "first-coast",
+              "relation": "differs",
+              "valueSummary": "Board-certified or board-eligible",
+              "sourceDocumentId": "lcd-hgns-fcso"
+            },
+            {
+              "contractorId": "novitas",
+              "relation": "adds",
+              "valueSummary": "Board-certified",
+              "sourceDocumentId": "lcd-hgns-novitas"
+            }
+          ]
+        },
+        {
+          "requirementId": "secondary-bmi-code-ceiling",
+          "label": "BMI coding ceiling",
+          "dimensionId": "billing",
+          "takeaway": "The real adjudication spread is in the billing articles: Noridian goes beyond the clinical BMI text.",
+          "contractorValues": [
+            {
+              "contractorId": "wps",
+              "relation": "codes",
+              "valueSummary": "Aligned to BMI < 35",
+              "sourceDocumentId": "article-hgns-wps"
+            },
+            {
+              "contractorId": "cgs",
+              "relation": "codes",
+              "valueSummary": "Aligned to BMI < 35",
+              "sourceDocumentId": "article-hgns-cgs"
+            },
+            {
+              "contractorId": "noridian-je",
+              "relation": "differs",
+              "valueSummary": "Extends to Z68.39",
+              "sourceDocumentId": "article-hgns-noridian"
+            },
+            {
+              "contractorId": "noridian-jf",
+              "relation": "differs",
+              "valueSummary": "Extends to Z68.39",
+              "sourceDocumentId": "article-hgns-noridian-jf-legacy"
+            },
+            {
+              "contractorId": "palmetto",
+              "relation": "codes",
+              "valueSummary": "Stops at Z68.34",
+              "sourceDocumentId": "article-hgns-palmetto"
+            },
+            {
+              "contractorId": "ngs",
+              "relation": "codes",
+              "valueSummary": "Article not curated separately; family follows common coding bundle",
+              "sourceDocumentId": "lcd-hgns-ngs"
+            },
+            {
+              "contractorId": "first-coast",
+              "relation": "codes",
+              "valueSummary": "Stops at Z68.34",
+              "sourceDocumentId": "article-hgns-fcso"
+            },
+            {
+              "contractorId": "novitas",
+              "relation": "codes",
+              "valueSummary": "Stops at Z68.34",
+              "sourceDocumentId": "article-hgns-novitas"
+            }
+          ]
+        },
+        {
+          "requirementId": "legacy-code-reference",
+          "label": "Legacy procedure code",
+          "dimensionId": "billing",
+          "takeaway": "Only the retired Noridian JF article still carries CPT 64568.",
+          "contractorValues": [
+            {
+              "contractorId": "wps",
+              "relation": "codes",
+              "valueSummary": "None",
+              "sourceDocumentId": "article-hgns-wps"
+            },
+            {
+              "contractorId": "cgs",
+              "relation": "codes",
+              "valueSummary": "None",
+              "sourceDocumentId": "article-hgns-cgs"
+            },
+            {
+              "contractorId": "noridian-je",
+              "relation": "codes",
+              "valueSummary": "None",
+              "sourceDocumentId": "article-hgns-noridian"
+            },
+            {
+              "contractorId": "noridian-jf",
+              "relation": "differs",
+              "valueSummary": "CPT 64568 retained",
+              "sourceDocumentId": "article-hgns-noridian-jf-legacy"
+            },
+            {
+              "contractorId": "palmetto",
+              "relation": "codes",
+              "valueSummary": "None",
+              "sourceDocumentId": "article-hgns-palmetto"
+            },
+            {
+              "contractorId": "ngs",
+              "relation": "codes",
+              "valueSummary": "None curated",
+              "sourceDocumentId": "lcd-hgns-ngs"
+            },
+            {
+              "contractorId": "first-coast",
+              "relation": "codes",
+              "valueSummary": "Text mentions 61886, not 64568",
+              "sourceDocumentId": "article-hgns-fcso"
+            },
+            {
+              "contractorId": "novitas",
+              "relation": "codes",
+              "valueSummary": "Text mentions 61886, not 64568",
+              "sourceDocumentId": "article-hgns-novitas"
+            }
+          ]
+        }
+      ]
+    },
+    "analyticQuestions": [
+      {
+        "id": "lcd-vs-ncd-meaningful-difference",
+        "prompt": "Does this LCD say anything meaningfully different from the NCD?",
+        "answer": "Answer by separating literal restatement, local operationalization, local narrowing, and truly new therapy-specific rules.",
+        "viewIds": [
+          "familyLineage",
+          "familyDeltaSummaries",
+          "documentProfiles"
+        ]
+      },
+      {
+        "id": "where-do-billing-articles-matter",
+        "prompt": "Where does the real operational spread live when LCD core criteria look aligned?",
+        "answer": "Answer by moving from the clinical-core matrix to billing/article-specific requirement entries such as BMI code ceilings, modifier guidance, and legacy code references.",
+        "viewIds": [
+          "contractorVariance",
+          "documentProfiles"
+        ]
+      },
+      {
+        "id": "what-evidence-does-a-rule-need",
+        "prompt": "What patient-side evidence or claim artifact satisfies this requirement?",
+        "answer": "Answer from the requirement dictionary, which binds each requirement to typical evidence payloads and related variables.",
+        "viewIds": [
+          "requirementCatalog"
+        ]
+      }
+    ]
   }
 }
