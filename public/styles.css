@@ -544,8 +544,7 @@ a:hover {
 
 .delta-card-head,
 .doc-rule-head,
-.requirement-head,
-.rule-statement-top {
+.requirement-head {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
@@ -605,10 +604,70 @@ a:hover {
   background: rgba(255, 255, 255, 0.78);
 }
 
+.rule-statement-meta {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+}
+
+.rule-statement-meta-row {
+  display: grid;
+  grid-template-columns: minmax(0, 170px) minmax(0, 1fr);
+  gap: 12px;
+  margin: 0;
+}
+
+.rule-statement-meta-label {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.rule-statement-meta-value {
+  margin: 0;
+  font-weight: 700;
+  line-height: 1.45;
+}
+
+.rule-statement-body-label {
+  margin-top: 12px;
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
 .rule-statement-value {
-  margin-top: 10px;
+  margin-top: 8px;
   font-weight: 700;
   line-height: 1.5;
+}
+
+.rule-statement-note {
+  margin-top: 12px;
+}
+
+.divergence-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 16px;
+  margin-top: 18px;
+}
+
+.divergence-card {
+  height: 100%;
+}
+
+.divergence-list {
+  margin: 12px 0 0;
+  padding-left: 18px;
+  display: grid;
+  gap: 10px;
+  line-height: 1.55;
 }
 
 .insight-card p,
@@ -638,6 +697,13 @@ a:hover {
   background: var(--paper-2);
   color: var(--ink);
   text-decoration: none;
+}
+
+@media (max-width: 720px) {
+  .rule-statement-meta-row {
+    grid-template-columns: 1fr;
+    gap: 6px;
+  }
 }
 
 .source-chip small {

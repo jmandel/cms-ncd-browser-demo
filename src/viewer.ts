@@ -320,7 +320,15 @@ interface CrossMacComparison {
     description: string;
     macBmiMaxCode: Record<string, string>;
   };
+  differenceGroups?: Array<{
+    id: string;
+    label: string;
+    intro: string;
+  }>;
   realDifferences?: Array<{
+    id?: string;
+    kind?: string;
+    label?: string;
     category: string;
     severity: string;
     description: string;
@@ -714,6 +722,68 @@ function relationVariant(relation: string) {
 
 function relationChip(label: string, relation: string, title?: string) {
   return noteChip(label, relationVariant(relation), title);
+}
+
+function relationExplanation(relation: string) {
+  if (relation === "baseline") return "Defines the national baseline rule.";
+  if (relation === "reuses") return "Carries the same national rule forward without changing it.";
+  if (relation === "narrows") return "Makes the inherited national rule stricter.";
+  if (relation === "operationalizes") return "Turns a broad inherited rule into an auditable workflow step.";
+  if (relation === "adds") return "Adds a therapy-specific local rule with no direct national counterpart.";
+  if (relation === "differs") return "Uses a materially different local rule for the same requirement.";
+  if (relation === "codes") return "Moves the logic into billing or coding instructions.";
+  if (relation === "governs") return "Describes policy lifecycle or governance rather than bedside eligibility.";
+  return relation;
+}
+
+function polarityExplanation(polarity: string) {
+  if (polarity === "requires") return "Requires this condition.";
+  if (polarity === "allows") return "Allows this path or evidence.";
+  if (polarity === "denies") return "Excludes or denies this scenario.";
+  if (polarity === "codes") return "Defines billing or coding handling.";
+  if (polarity === "documents") return "Specifies what must be documented.";
+  if (polarity === "references") return "Points to a linked policy or source.";
+  if (polarity === "structures") return "Defines the document structure or packaging.";
+  if (polarity === "status") return "States lifecycle status.";
+  if (polarity === "summarizes") return "Summarizes the document's role.";
+  if (polarity === "responds") return "Captures response-to-comments context.";
+  return polarity;
+}
+
+function renderRuleStatementCard(requirements: Map<string, RuleRequirementEntry>, item: RuleStatement) {
+  const requirement = requirements.get(item.requirementId);
+  const requirementLabel = requirement?.label ?? requirement?.shortLabel ?? item.requirementId;
+
+  return `
+    <div class="rule-statement-card">
+      <dl class="rule-statement-meta">
+        <div class="rule-statement-meta-row">
+          <dt class="rule-statement-meta-label">Requirement</dt>
+          <dd class="rule-statement-meta-value">${escapeHtml(requirementLabel)}</dd>
+        </div>
+        <div class="rule-statement-meta-row">
+          <dt class="rule-statement-meta-label">Relation to national baseline</dt>
+          <dd class="rule-statement-meta-value">${escapeHtml(relationExplanation(item.relation))}</dd>
+        </div>
+        <div class="rule-statement-meta-row">
+          <dt class="rule-statement-meta-label">What this document does</dt>
+          <dd class="rule-statement-meta-value">${escapeHtml(polarityExplanation(item.polarity))}</dd>
+        </div>
+      </dl>
+      <div class="rule-statement-body-label">Structured statement captured here</div>
+      <div class="rule-statement-value">${escapeHtml(item.valueSummary)}</div>
+      ${
+        item.note
+          ? `
+            <div class="rule-statement-note">
+              <div class="rule-statement-body-label">Why it matters</div>
+              <div class="variation-note">${escapeHtml(item.note)}</div>
+            </div>
+          `
+          : ""
+      }
+    </div>
+  `;
 }
 
 interface BasisRef {
@@ -1139,22 +1209,7 @@ function renderDocumentRuleCard(model: PrototypeModel, profile: RuleDocumentProf
       }
 
       <div class="rule-statement-stack">
-        ${profile.statements
-          .map((item) => {
-            const requirement = requirements.get(item.requirementId);
-            return `
-              <div class="rule-statement-card">
-                <div class="rule-statement-top">
-                  ${relationChip(item.relation, item.relation)}
-                  ${noteChip(requirement?.shortLabel ?? item.requirementId, "neutral")}
-                  ${noteChip(item.polarity, "muted")}
-                </div>
-                <div class="rule-statement-value">${escapeHtml(item.valueSummary)}</div>
-                ${item.note ? `<div class="variation-note">${escapeHtml(item.note)}</div>` : ""}
-              </div>
-            `;
-          })
-          .join("")}
+        ${profile.statements.map((item) => renderRuleStatementCard(requirements, item)).join("")}
       </div>
     </article>
   `;
@@ -1760,26 +1815,7 @@ function renderSelectedFamilyRuleLedger(model: PrototypeModel) {
               }
 
               <div class="rule-statement-stack">
-                ${profile.statements
-                  .map((item) => {
-                    const requirement = requirements.get(item.requirementId);
-                    return `
-                      <div class="rule-statement-card">
-                        <div class="rule-statement-top">
-                          ${relationChip(item.relation, item.relation)}
-                          ${noteChip(requirement?.shortLabel ?? item.requirementId, "neutral")}
-                          ${noteChip(item.polarity, "muted")}
-                        </div>
-                        <div class="rule-statement-value">${escapeHtml(item.valueSummary)}</div>
-                        ${
-                          item.note
-                            ? `<div class="variation-note">${escapeHtml(item.note)}</div>`
-                            : ""
-                        }
-                      </div>
-                    `;
-                  })
-                  .join("")}
+                ${profile.statements.map((item) => renderRuleStatementCard(requirements, item)).join("")}
               </div>
             </article>
           `)
@@ -2146,17 +2182,45 @@ function renderMacVariation(model: PrototypeModel) {
     },
   ];
 
-  const literalClinicalDiffCount = realDifferences.filter((item) => item.category.startsWith("LCD:")).length;
-  const billingDiffCount = realDifferences.filter((item) => item.category.startsWith("Billing:")).length;
-  const structureDiffCount = realDifferences.filter((item) => item.category.startsWith("LCD Structure")).length;
+  const fallbackClinicalDiffCount = realDifferences.filter((item) => item.category.startsWith("LCD:")).length;
+  const differenceGroupDefs =
+    list(comparison.differenceGroups).length > 0
+      ? list(comparison.differenceGroups)
+      : [
+          {
+            id: "clinical",
+            label: "Clinical rule differences",
+            intro: "The normalized HGNS core is mostly shared. The clinical spread comes from a few contractor-specific wording or measurement choices.",
+          },
+          {
+            id: "billing",
+            label: "Billing and coding differences",
+            intro: "Most contractor spread lives in the companion billing articles rather than in the LCD eligibility core.",
+          },
+          {
+            id: "governance",
+            label: "Lifecycle and document-structure differences",
+            intro: "Some differences are about retired records, shorter or longer LCD formats, and how much supporting context each contractor publishes.",
+          },
+        ];
+  const differenceGroupLabels = new Map(differenceGroupDefs.map((group) => [group.id, group.label]));
+  const clinicalDiffCount = realDifferences.filter((item) => item.kind === "clinical").length;
+  const billingDiffCount = realDifferences.filter((item) => item.kind === "billing").length;
+  const governanceDiffCount = realDifferences.filter((item) => item.kind === "governance").length;
+  const divergenceGroups = differenceGroupDefs
+    .map((group) => ({
+      ...group,
+      items: realDifferences.filter((item) => item.kind === group.id),
+    }))
+    .filter((group) => group.items.length);
 
   return `
     <section class="panel panel-hgns-variation">
       <div class="section-head">
         <div>
           <div class="eyebrow">Variation Surface</div>
-          <h2>HGNS Cross-MAC Variation</h2>
-          <p class="section-copy">The integrated model now separates the aligned clinical core from the article and coding spread. ${currentFamilyIsHgns ? "This family is in focus." : "The view stays visible because HGNS is the only multi-MAC branch in this prototype."}</p>
+          <h2>HGNS LCDs Mostly Align Clinically. Here Is Where They Actually Diverge.</h2>
+          <p class="section-copy">At the normalized clinical-core level, all eight modeled HGNS LCDs include the same main requirements. The meaningful spread is narrower and easier to name: a few clinical-rule wording differences, a larger set of billing-article differences, and some lifecycle or document-structure differences. ${currentFamilyIsHgns ? "This treatment path is in focus." : "The view stays visible because HGNS is the only multi-MAC treatment path in this prototype."}</p>
         </div>
       </div>
 
@@ -2165,15 +2229,50 @@ function renderMacVariation(model: PrototypeModel) {
         ${noteChip(`${contractors.length} contractor variants`, "neutral")}
         ${noteChip(`${comparison.bmiCodeVariation ? Object.keys(comparison.bmiCodeVariation.macBmiMaxCode).length : 0} BMI code lanes`, "neutral")}
         ${realDifferences.length ? noteChip(`${realDifferences.length} material differences captured`, "amber", "The normalized checkmark grid is aligned, but the integrated model still captures real cross-MAC differences.") : ""}
-        ${literalClinicalDiffCount ? noteChip(`${literalClinicalDiffCount} literal clinical criterion variant`, "rose", "At least one LCD uses materially different wording or a different measurement window even though the normalized core remains aligned.") : ""}
+        ${clinicalDiffCount || fallbackClinicalDiffCount ? noteChip(`${clinicalDiffCount || fallbackClinicalDiffCount} clinical-rule differences`, "rose", "At least one LCD uses materially different wording, measurement windows, or provider rules even though the normalized core remains aligned.") : ""}
         ${billingDiffCount ? noteChip(`${billingDiffCount} billing / coding differences`, "blue") : ""}
-        ${structureDiffCount ? noteChip(`${structureDiffCount} structure / wording differences`, "neutral") : ""}
+        ${governanceDiffCount ? noteChip(`${governanceDiffCount} lifecycle / structure differences`, "neutral") : ""}
       </div>
 
       <div class="variation-summary-callout">
         <strong>${escapeHtml(comparison.verdictSummary ?? "Clinical-core presence is aligned, but the integrated model still captures real contractor variation.")}</strong>
-        <span>The checkmarks below answer only whether each normalized core requirement is present in a contractor LCD. They do not encode wording changes, measurement-window changes, or billing-article differences.</span>
+        <span>The checkmark matrix answers only one question: does each contractor LCD include this normalized core requirement at all? The concrete divergences are surfaced first below, so you do not have to infer them from identical checkmarks.</span>
       </div>
+
+      ${
+        divergenceGroups.length
+          ? `
+            <div class="divergence-grid">
+              ${divergenceGroups
+                .map(
+                  (group) => `
+                    <article class="tutorial-card divergence-card">
+                      <div class="count-card-head">
+                        <h3>${escapeHtml(group.label)}</h3>
+                        <span class="count-pill">${group.items.length} modeled</span>
+                      </div>
+                      <p>${escapeHtml(group.intro)}</p>
+                      <ul class="divergence-list">
+                        ${group.items
+                          .slice(0, 3)
+                          .map(
+                            (item) => `
+                              <li>
+                                <strong>${escapeHtml(item.label ?? item.category)}:</strong>
+                                ${escapeHtml(item.description)}
+                              </li>
+                            `,
+                          )
+                          .join("")}
+                      </ul>
+                    </article>
+                  `,
+                )
+                .join("")}
+            </div>
+          `
+          : ""
+      }
 
       <div class="matrix-wrap">
         <table class="matrix-table">
@@ -2230,7 +2329,12 @@ function renderMacVariation(model: PrototypeModel) {
                       (difference) => `
                         <tr>
                           <td>
-                            <div class="variation-label">${escapeHtml(difference.category)}</div>
+                            <div class="variation-label">${escapeHtml(difference.label ?? difference.category)}</div>
+                            ${
+                              difference.kind
+                                ? `<div class="variation-note">${escapeHtml(differenceGroupLabels.get(difference.kind) ?? difference.kind)}</div>`
+                                : ""
+                            }
                           </td>
                           <td><span class="value-pill is-${difference.severity === "high" ? "rose" : difference.severity === "medium" ? "amber" : "muted"}">${escapeHtml(difference.severity)}</span></td>
                           <td>

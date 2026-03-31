@@ -3446,7 +3446,10 @@
           "Noridian (JE)",
           "Noridian (JF)"
         ],
-        "detail": "Noridian: 22 ICD-10 covered codes (Z68.1–Z68.39). Palmetto/First Coast/Novitas: 17 codes (Z68.1–Z68.34). Five extra BMI codes at Noridian."
+        "detail": "Noridian: 22 ICD-10 covered codes (Z68.1–Z68.39). Palmetto/First Coast/Novitas: 17 codes (Z68.1–Z68.34). Five extra BMI codes at Noridian.",
+        "id": "billing-bmi-code-range",
+        "kind": "billing",
+        "label": "BMI code range"
       },
       {
         "category": "Billing: Legacy CPT Code",
@@ -3455,7 +3458,10 @@
         "affectedMacs": [
           "Noridian (JF)"
         ],
-        "detail": "CPT 64568 was a pre-existing vagus nerve stimulator code presumably used before dedicated HGNS codes were created."
+        "detail": "CPT 64568 was a pre-existing vagus nerve stimulator code presumably used before dedicated HGNS codes were created.",
+        "id": "billing-legacy-cpt-code",
+        "kind": "billing",
+        "label": "Legacy CPT code"
       },
       {
         "category": "Billing: Mutual Exclusion Rules",
@@ -3465,7 +3471,10 @@
           "Noridian (JE)",
           "Noridian (JF)"
         ],
-        "detail": "Palmetto, First Coast, and Novitas do not include these 'do not bill X with Y' rules."
+        "detail": "Palmetto, First Coast, and Novitas do not include these 'do not bill X with Y' rules.",
+        "id": "billing-mutual-exclusion-rules",
+        "kind": "billing",
+        "label": "Mutual exclusion rules"
       },
       {
         "category": "Billing: Modifier 52 Guidance",
@@ -3475,7 +3484,10 @@
           "Noridian (JE)",
           "Palmetto GBA"
         ],
-        "detail": "Noridian: 'Use modifier 52 for revision of either the electrode array or respiratory sensor.' Palmetto: 'Append modifier 52 in instances where only a portion of the device is revised.' First Coast/Novitas: silent."
+        "detail": "Noridian: 'Use modifier 52 for revision of either the electrode array or respiratory sensor.' Palmetto: 'Append modifier 52 in instances where only a portion of the device is revised.' First Coast/Novitas: silent.",
+        "id": "billing-modifier-52-guidance",
+        "kind": "billing",
+        "label": "Modifier 52 guidance"
       },
       {
         "category": "Billing: ABN Modifier Guidance",
@@ -3484,7 +3496,10 @@
         "affectedMacs": [
           "Palmetto GBA"
         ],
-        "detail": "This is unique to Palmetto's billing article (A58075) and absent from all other MAC articles."
+        "detail": "This is unique to Palmetto's billing article (A58075) and absent from all other MAC articles.",
+        "id": "billing-abn-modifier-guidance",
+        "kind": "billing",
+        "label": "ABN modifier guidance"
       },
       {
         "category": "Billing: CPT 61886 Reference",
@@ -3494,7 +3509,10 @@
           "First Coast Service Options",
           "Novitas Solutions"
         ],
-        "detail": "61886 is referenced as an alternative code for pulse generator replacement. Other MACs do not mention this code."
+        "detail": "61886 is referenced as an alternative code for pulse generator replacement. Other MACs do not mention this code.",
+        "id": "billing-cpt-61886-reference",
+        "kind": "billing",
+        "label": "CPT 61886 reference"
       },
       {
         "category": "LCD Structure: Palmetto Uniquely Concise",
@@ -3503,7 +3521,10 @@
         "affectedMacs": [
           "Palmetto GBA"
         ],
-        "detail": "Palmetto LCD is ~5,500 chars vs ~10,800 for others. It omits the anatomy background section, uses SSA title citations instead of IOM references, and its analysis of evidence says 'Level of evidence — Good (I-IIb)' instead of the paragraph-form analysis used by others."
+        "detail": "Palmetto LCD is ~5,500 chars vs ~10,800 for others. It omits the anatomy background section, uses SSA title citations instead of IOM references, and its analysis of evidence says 'Level of evidence — Good (I-IIb)' instead of the paragraph-form analysis used by others.",
+        "id": "governance-palmetto-structure",
+        "kind": "governance",
+        "label": "Palmetto LCD structure"
       },
       {
         "category": "LCD: CPAP Intolerance Definition",
@@ -3512,7 +3533,10 @@
         "affectedMacs": [
           "Palmetto GBA"
         ],
-        "detail": "This is a materially different clinical criterion despite the shared 4-hour threshold. Palmetto's 70% over 1 month is a different measurement window than '5 nights/week.'"
+        "detail": "This is a materially different clinical criterion despite the shared 4-hour threshold. Palmetto's 70% over 1 month is a different measurement window than '5 nights/week.'",
+        "id": "clinical-cpap-intolerance-definition",
+        "kind": "clinical",
+        "label": "CPAP intolerance definition"
       },
       {
         "category": "LCD: SDM Definition Difference",
@@ -3521,7 +3545,10 @@
         "affectedMacs": [
           "WPS Insurance"
         ],
-        "detail": "WPS: 'SDM shall be documented in the patient's record by the referring physician and the implanting physician.' Others: SDM is a patient-provider conversation only."
+        "detail": "WPS: 'SDM shall be documented in the patient's record by the referring physician and the implanting physician.' Others: SDM is a patient-provider conversation only.",
+        "id": "clinical-sdm-definition",
+        "kind": "clinical",
+        "label": "Shared decision-making definition"
       },
       {
         "category": "LCD: Board Certification Language",
@@ -3533,7 +3560,10 @@
           "First Coast Service Options",
           "National Government Services"
         ],
-        "detail": "WPS/CGS/Novitas: 'board certified otolaryngologist.' Noridian/First Coast/NGS add 'or a board eligible.'"
+        "detail": "WPS/CGS/Novitas: 'board certified otolaryngologist.' Noridian/First Coast/NGS add 'or a board eligible.'",
+        "id": "clinical-board-certification-language",
+        "kind": "clinical",
+        "label": "Board certification wording"
       },
       {
         "category": "LCD: Cross-Referenced Sleep Study LCD",
@@ -3542,7 +3572,10 @@
         "affectedMacs": [
           "all"
         ],
-        "detail": "WPS: L36839; CGS: L36902; Noridian JE: L36861; Noridian JF: L34040; NGS: A53019 (article, not LCD); First Coast: L33405; Novitas: L35050."
+        "detail": "WPS: L36839; CGS: L36902; Noridian JE: L36861; Noridian JF: L34040; NGS: A53019 (article, not LCD); First Coast: L33405; Novitas: L35050.",
+        "id": "clinical-sleep-study-cross-reference",
+        "kind": "clinical",
+        "label": "Sleep-study cross-reference"
       },
       {
         "category": "LCD: Retired Document",
@@ -3551,7 +3584,10 @@
         "affectedMacs": [
           "Noridian (JF)"
         ],
-        "detail": "History section states: 'This final LCD is being retired and combined into the JE LCD.'"
+        "detail": "History section states: 'This final LCD is being retired and combined into the JE LCD.'",
+        "id": "governance-retired-document",
+        "kind": "governance",
+        "label": "Retired Noridian JF LCD"
       },
       {
         "category": "LCD: NGS Unique Limitation Wording",
@@ -3560,7 +3596,10 @@
         "affectedMacs": [
           "National Government Services"
         ],
-        "detail": "NGS: 'Neuromuscular disease affecting the respiratory system.' Others: 'Neuromuscular disease' (unqualified)."
+        "detail": "NGS: 'Neuromuscular disease affecting the respiratory system.' Others: 'Neuromuscular disease' (unqualified).",
+        "id": "clinical-ngs-limitation-wording",
+        "kind": "clinical",
+        "label": "NGS limitation wording"
       },
       {
         "category": "LCD: Section Availability",
@@ -3570,7 +3609,10 @@
           "Palmetto GBA",
           "Noridian (JF)"
         ],
-        "detail": "Issue section present: WPS, CGS, Noridian JE, Palmetto. Absent: Noridian JF, NGS, First Coast, Novitas."
+        "detail": "Issue section present: WPS, CGS, Noridian JE, Palmetto. Absent: Noridian JF, NGS, First Coast, Novitas.",
+        "id": "governance-section-availability",
+        "kind": "governance",
+        "label": "Section availability"
       },
       {
         "category": "Billing: Documentation Requirements",
@@ -3579,7 +3621,10 @@
         "affectedMacs": [
           "Palmetto GBA"
         ],
-        "detail": "Palmetto A58075 criteria: 'Symptoms', 'Polysomnography reporting', 'Drug Induced Sleep Endoscopy (DISE) reporting-CPT code 42975', 'Body mass index (BMI).' Others: 'All documentation must be maintained in the patient's medical record.'"
+        "detail": "Palmetto A58075 criteria: 'Symptoms', 'Polysomnography reporting', 'Drug Induced Sleep Endoscopy (DISE) reporting-CPT code 42975', 'Body mass index (BMI).' Others: 'All documentation must be maintained in the patient's medical record.'",
+        "id": "billing-documentation-requirements",
+        "kind": "billing",
+        "label": "Documentation requirements"
       },
       {
         "category": "LCD: Related Document Count",
@@ -3589,7 +3634,27 @@
           "WPS Insurance",
           "CGS Administrators"
         ],
-        "detail": "WPS uniquely references L35490 (Category III Codes), L36839 (Polysomnography), A54953 (IDTF). Most MACs reference 5–6 related documents."
+        "detail": "WPS uniquely references L35490 (Category III Codes), L36839 (Polysomnography), A54953 (IDTF). Most MACs reference 5–6 related documents.",
+        "id": "governance-related-document-count",
+        "kind": "governance",
+        "label": "Related-document count"
+      }
+    ],
+    "differenceGroups": [
+      {
+        "id": "clinical",
+        "label": "Clinical rule differences",
+        "intro": "The normalized HGNS core is mostly shared. The clinical spread comes from a few contractor-specific wording or measurement choices."
+      },
+      {
+        "id": "billing",
+        "label": "Billing and coding differences",
+        "intro": "Most contractor spread lives in the companion billing articles rather than in the LCD eligibility core."
+      },
+      {
+        "id": "governance",
+        "label": "Lifecycle and document-structure differences",
+        "intro": "Some differences are about retired records, shorter or longer LCD formats, and how much supporting context each contractor publishes."
       }
     ]
   },
