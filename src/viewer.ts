@@ -693,6 +693,129 @@ function formatStepRequirement(treatment: TreatmentModel) {
   return treatment.eligibility.requiresCpapFailure ? "Required" : "Not required";
 }
 
+function relationLeadLabel(relation?: string) {
+  if (relation === "narrows") return "Narrows baseline";
+  if (relation === "adds") return "Adds local rule";
+  if (relation === "operationalizes") return "Operationalizes baseline";
+  if (relation === "differs") return "Uses a different rule";
+  if (relation === "codes") return "Moves into coding";
+  if (relation === "reuses") return "Reuses baseline";
+  if (relation === "baseline") return "Baseline rule";
+  if (relation === "governs") return "Governance rule";
+  return "Structured rule";
+}
+
+function renderProfileSourceSection(model: PrototypeModel, family: PolicyFamily, treatment: TreatmentModel | null, layering: LayeringModel | undefined) {
+  const billingArticles = list(treatment?.articles).filter((article) => article.type === "billing");
+  const responseArticles = list(treatment?.articles).filter((article) => article.type === "response-to-comments");
+  const totalRecords =
+    new Set([
+      ...list(layering?.baselineSourceIds),
+      ...list(layering?.overlaySourceIds),
+      ...(treatment?.ncd ? [treatment.ncd.displayId] : []),
+      ...list(treatment?.lcds).map((item) => item.displayId),
+      ...list(treatment?.articles).map((item) => item.displayId),
+    ]).size;
+
+  const rows = [
+    {
+      label: "National baseline",
+      body:
+        treatment?.ncd
+          ? "This path has a therapy-specific national baseline document."
+          : layering?.baselineSourceIds?.length
+            ? "This path has no therapy-specific NCD, so the profile inherits the national sleep-testing and CPAP floor instead."
+            : "No national baseline record is modeled for this path.",
+      content:
+        treatment?.ncd
+          ? `<div class="focus-doc-row">${docChip(model, treatment.ncd.displayId, treatment.ncd.displayId, "ncd", treatment.ncd.title)}</div>`
+          : layering?.baselineSourceIds?.length
+            ? `<div class="source-row">${sourceLinks(model, layering.baselineSourceIds)}</div>`
+            : `<div class="profile-source-note">No national source linked for this path.</div>`,
+    },
+    {
+      label: "Local coverage rule",
+      body: list(treatment?.lcds).length
+        ? "These LCDs supply the actual local coverage logic for this treatment path."
+        : "No local LCD is linked in the current model.",
+      content: list(treatment?.lcds).length
+        ? `<div class="focus-doc-row">${list(treatment?.lcds)
+            .map((lcd) => docChip(model, lcd.displayId, lcd.displayId, "lcd", lcd.title))
+            .join("")}</div>`
+        : `<div class="profile-source-note">No local LCD linked.</div>`,
+    },
+    {
+      label: "Coding and governance records",
+      body:
+        billingArticles.length || responseArticles.length
+          ? "These companion records turn the policy into coding guidance or explain rollout history."
+          : "No companion article is linked for this path.",
+      content:
+        billingArticles.length || responseArticles.length
+          ? `
+              <div class="focus-doc-row">
+                ${billingArticles.map((article) => docChip(model, article.displayId, article.displayId, "article", article.title)).join("")}
+                ${responseArticles.map((article) => docChip(model, article.displayId, article.displayId, "article", article.title)).join("")}
+              </div>
+            `
+          : `<div class="profile-source-note">No companion article linked.</div>`,
+    },
+    {
+      label: "Modeled scope",
+      body: `${totalRecords} source record${totalRecords === 1 ? "" : "s"} are synthesized into this profile.`,
+      content: `<div class="profile-source-note">${escapeHtml(family.label)} is summarized here as a single treatment-path profile so you do not have to read those records side by side.</div>`,
+    },
+  ];
+
+  return `
+    <div class="profile-source-list">
+      ${rows
+        .map(
+          (row) => `
+            <div class="profile-source-item">
+              <div class="profile-source-label">${escapeHtml(row.label)}</div>
+              <div class="profile-source-content">
+                <p>${escapeHtml(row.body)}</p>
+                ${row.content}
+              </div>
+            </div>
+          `,
+        )
+        .join("")}
+    </div>
+  `;
+}
+
+function renderCriterionEvidenceList(model: PrototypeModel, title: string, criteria: LayerCriterion[], emptyMessage: string) {
+  if (!criteria.length) {
+    return `
+      <div class="criteria-block">
+        <div class="requirement-subhead">${escapeHtml(title)}</div>
+        <div class="profile-source-note">${escapeHtml(emptyMessage)}</div>
+      </div>
+    `;
+  }
+
+  return `
+    <div class="criteria-block">
+      <div class="requirement-subhead">${escapeHtml(title)}</div>
+      <div class="criteria-detail-list">
+        ${criteria
+          .map(
+            (criterion) => `
+              <article class="criteria-detail-card">
+                <div class="criteria-detail-label">${escapeHtml(relationLeadLabel(criterion.relation))}</div>
+                <div class="criteria-detail-text">${escapeHtml(criterion.text)}</div>
+                <div class="source-row">${sourceLinks(model, criterion.sourceIds)}</div>
+              </article>
+            `,
+          )
+          .join("")}
+      </div>
+    </div>
+  `;
+}
+
 function docChip(model: PrototypeModel, displayId: string, label = displayId, variant = "neutral", title?: string) {
   const source = sourceDisplayMap(model).get(displayId);
   const className = `mini-doc-chip is-${variant}`;
@@ -1322,8 +1445,6 @@ function renderFamilyFocus(model: PrototypeModel) {
   const layering = layeringMap(model).get(family.id);
   const codeCatalog = codeCatalogMap(model).get(family.id);
   const treatment = currentTreatmentModel(model);
-  const docCount =
-    Number(Boolean(treatment?.ncd)) + list(treatment?.lcds).length + list(treatment?.articles).length;
   const keyRequirements = treatment
     ? [
         ...list(treatment.eligibility.criteria?.flatMap((criterion) => criterion.requirements ?? [])),
@@ -1360,6 +1481,7 @@ function renderFamilyFocus(model: PrototypeModel) {
 
         <div class="focus-column">
           <h3>Typed Profile</h3>
+          <p class="section-copy">These four fields are the normalized summary. The exact source records and the concrete criteria used to build that summary are listed directly underneath.</p>
           ${
             treatment
               ? `
@@ -1381,34 +1503,21 @@ function renderFamilyFocus(model: PrototypeModel) {
                     <strong>${escapeHtml(formatStepRequirement(treatment))}</strong>
                   </div>
                 </div>
-
-                <div class="focus-doc-row">
-                  ${treatment.ncd ? docChip(model, treatment.ncd.displayId, treatment.ncd.displayId, "ncd", treatment.ncd.title) : noteChip("No NCD", "muted", "Coverage is LCD-driven or uses national analogs.")}
-                  ${list(treatment.lcds)
-                    .slice(0, 3)
-                    .map((lcd) => docChip(model, lcd.displayId, lcd.displayId, "lcd", lcd.title))
-                    .join("")}
-                  ${list(treatment.lcds).length > 3 ? noteChip(`+${list(treatment.lcds).length - 3} LCDs`, "lcd", "Additional local variants are present in this branch.") : ""}
-                  ${list(treatment.articles)
-                    .slice(0, 2)
-                    .map((article) =>
-                      docChip(model, article.displayId, article.displayId, article.type === "response-to-comments" ? "article" : "article", article.type === "response-to-comments" ? "Response to comments" : article.type ?? article.title),
-                    )
-                    .join("")}
-                  ${docCount ? noteChip(`${docCount} records`, "neutral", "NCD + LCD + Article records used in the integrated model.") : ""}
-                </div>
-
-                ${
-                  keyRequirements.length
-                    ? `
-                      <div class="focus-typed-list">
-                        ${keyRequirements
-                          .map((item) => `<div class="typed-list-item">${escapeHtml(item)}</div>`)
-                          .join("")}
-                      </div>
-                    `
-                    : ""
-                }
+                ${renderProfileSourceSection(model, family, treatment, layering)}
+                ${renderCriterionEvidenceList(model, "Inherited baseline rules", list(layering?.baselineCriteria), "No inherited baseline rules are listed for this path.")}
+                ${renderCriterionEvidenceList(
+                  model,
+                  "Concrete local rules for this path",
+                  list(layering?.overlayCriteria).length
+                    ? list(layering?.overlayCriteria)
+                    : keyRequirements.map((item, index) => ({
+                        id: `fallback-${family.id}-${index}`,
+                        text: item,
+                        kind: "criterion",
+                        sourceIds: family.sourceIds,
+                      })),
+                  "No concrete local rules are listed for this path.",
+                )}
               `
               : ""
           }
@@ -1529,6 +1638,15 @@ function renderRuleSemantics(model: PrototypeModel) {
             const active = summary.familyId === state.selectedFamilyId;
             const countEntries = Object.entries(summary.counts).filter(([, value]) => value > 0);
             const relationLegend = new Map(rules.relationLegend.map((item) => [item.id, item]));
+            const layering = layeringMap(model).get(summary.familyId);
+            const localChanges = list(layering?.overlayCriteria).slice(0, 3);
+            const inherited = list(layering?.baselineCriteria).slice(0, 1);
+            const relationSummary = countEntries
+              .map(([relation, value]) => {
+                const relationInfo = relationLegend.get(relation);
+                return `${value} ${relationInfo ? relationInfo.label.toLowerCase() : relation}`;
+              })
+              .join(", ");
 
             return `
               <article class="delta-card ${active ? "is-active" : ""}">
@@ -1539,18 +1657,34 @@ function renderRuleSemantics(model: PrototypeModel) {
                   </div>
                 </div>
                 <p>${escapeHtml(summary.takeaway)}</p>
-                <div class="delta-counts">
-                  ${countEntries
-                    .map(([relation, value]) => {
-                      const relationInfo = relationLegend.get(relation);
-                      const label = relationInfo ? `${value} ${relationInfo.label}` : `${value} ${relation}`;
-                      const title = relationInfo
-                        ? `${value} structured statements classified as ${relationInfo.label.toLowerCase()}.`
-                        : `${value} structured statements classified as ${relation}.`;
-                      return relationChip(label, relation, title);
-                    })
-                    .join("")}
-                </div>
+                ${
+                  inherited.length
+                    ? `
+                      <div class="delta-detail-label">Inherited foundation</div>
+                      <div class="delta-detail-text">${escapeHtml(inherited[0].text)}</div>
+                    `
+                    : ""
+                }
+                ${
+                  localChanges.length
+                    ? `
+                      <div class="delta-detail-label">Concrete local changes</div>
+                      <div class="delta-example-list">
+                        ${localChanges
+                          .map(
+                            (criterion) => `
+                              <div class="delta-example-item">
+                                <strong>${escapeHtml(relationLeadLabel(criterion.relation))}:</strong>
+                                <span>${escapeHtml(criterion.text)}</span>
+                              </div>
+                            `,
+                          )
+                          .join("")}
+                      </div>
+                    `
+                    : ""
+                }
+                ${relationSummary ? `<div class="delta-summary-line">Structured comparison captured here: ${escapeHtml(relationSummary)}.</div>` : ""}
                 <div class="delta-sources">
                   <div class="source-row">${sourceLinks(model, [...summary.baselineDocumentIds, ...summary.localDocumentIds])}</div>
                 </div>
@@ -1592,73 +1726,45 @@ function renderRequirementDictionary(model: PrototypeModel) {
   }
 
   const selectedFamilyId = state.selectedFamilyId;
+  const selectedFamily = currentFamily(model);
 
   return `
     <section class="panel">
       <div class="section-head">
         <div>
           <div class="eyebrow">Requirement Dictionary</div>
-          <h2>Canonical Requirement Entities</h2>
-          <p class="section-copy">Each reusable requirement becomes a first-class entity with a definition, evidence payload, and known reusers across the OSA policy graph.</p>
+          <h2>What The Requirement Dictionary Adds</h2>
+          <p class="section-copy">This layer exists to support reuse and comparison. Instead of repeating the same idea across many documents, the model gives that idea one canonical home. For the tutorial, the useful view is the group structure and a few representative examples, not a wall of near-duplicate cards.</p>
         </div>
       </div>
 
-      <div class="dictionary-group-stack">
+      <div class="tutorial-grid tutorial-grid-4">
         ${rules.requirementGroups
           .map((group) => {
             const entries = rules.requirementCatalog.filter((entry) => entry.groupId === group.id);
+            const activeCount = entries.filter((entry) => entry.usedByFamilies.includes(selectedFamilyId)).length;
             return `
-              <section class="dictionary-group">
-                <div class="section-head secondary">
-                  <div>
-                    <h3>${escapeHtml(group.label)}</h3>
-                    <p class="section-copy">${escapeHtml(group.description)}</p>
-                  </div>
+              <article class="tutorial-card count-card ${activeCount ? "is-active" : ""}">
+                <div class="count-card-head">
+                  <h3>${escapeHtml(group.label)}</h3>
+                  <span class="count-pill">${entries.length} entities</span>
                 </div>
-
-                <div class="requirement-grid">
+                <p>${escapeHtml(group.description)}</p>
+                <div class="requirement-subhead">${activeCount ? `${activeCount} used by ${escapeHtml(selectedFamily.label)}` : "Representative examples"}</div>
+                <div class="typed-list compact-list">
                   ${entries
-                    .map((item) => {
-                      const active = item.usedByFamilies.includes(selectedFamilyId);
-                      return `
-                        <article class="requirement-card ${active ? "is-active" : ""}">
-                          <div class="requirement-head">
-                            <div class="requirement-title">${escapeHtml(item.label)}</div>
-                            ${noteChip(item.valueType, "neutral")}
-                          </div>
-                          <div class="requirement-question">${escapeHtml(item.canonicalQuestion)}</div>
-                          <p class="requirement-definition">${escapeHtml(item.definition)}</p>
-                          <div class="requirement-subhead">Typical evidence</div>
-                          <div class="typed-list">
-                            ${item.typicalEvidence.map((evidence) => `<div class="typed-list-item">${escapeHtml(evidence)}</div>`).join("")}
-                          </div>
-                          ${
-                            item.relatedVariableIds.length
-                              ? `
-                                <div class="requirement-subhead">Related variables</div>
-                                <div class="delta-counts">
-                                  ${item.relatedVariableIds.map((id) => noteChip(id, "muted")).join("")}
-                                </div>
-                              `
-                              : ""
-                          }
-                          <div class="requirement-subhead">Used by families</div>
-                          <div class="used-by-row">
-                            ${item.usedByFamilies
-                              .map((familyId) => {
-                                const family = familyMap(model).get(familyId);
-                                return family
-                                  ? `<span class="family-pill ${familyId === selectedFamilyId ? "is-current" : ""}">${escapeHtml(family.label)}</span>`
-                                  : "";
-                              })
-                              .join("")}
-                          </div>
-                        </article>
-                      `;
-                    })
+                    .slice(0, 3)
+                    .map(
+                      (item) => `
+                        <div class="typed-list-item">
+                          <strong>${escapeHtml(item.label)}</strong>
+                          <div class="variation-note">${escapeHtml(item.definition)}</div>
+                        </div>
+                      `,
+                    )
                     .join("")}
                 </div>
-              </section>
+              </article>
             `;
           })
           .join("")}
@@ -2213,6 +2319,12 @@ function renderMacVariation(model: PrototypeModel) {
       items: realDifferences.filter((item) => item.kind === group.id),
     }))
     .filter((group) => group.items.length);
+  const retiredMacCount = new Set(
+    realDifferences
+      .filter((item) => item.id === "governance-retired-document")
+      .flatMap((item) => item.affectedMacs),
+  ).size;
+  const currentMacCount = contractors.length - retiredMacCount;
 
   return `
     <section class="panel panel-hgns-variation">
@@ -2220,7 +2332,7 @@ function renderMacVariation(model: PrototypeModel) {
         <div>
           <div class="eyebrow">Variation Surface</div>
           <h2>HGNS LCDs Mostly Align Clinically. Here Is Where They Actually Diverge.</h2>
-          <p class="section-copy">At the normalized clinical-core level, all eight modeled HGNS LCDs include the same main requirements. The meaningful spread is narrower and easier to name: a few clinical-rule wording differences, a larger set of billing-article differences, and some lifecycle or document-structure differences. ${currentFamilyIsHgns ? "This treatment path is in focus." : "The view stays visible because HGNS is the only multi-MAC treatment path in this prototype."}</p>
+          <p class="section-copy">At the normalized clinical-core level, all eight modeled HGNS LCDs include the same main requirements. The meaningful spread is narrower and easier to name: a few clinical-rule wording differences, a larger set of billing-article differences, and some lifecycle or document-structure differences. These columns are MAC jurisdictions, not states. This prototype shows ${currentMacCount} current HGNS LCDs plus ${retiredMacCount} retired legacy LCD retained for comparison. ${currentFamilyIsHgns ? "This treatment path is in focus." : "The view stays visible because HGNS is the only multi-MAC treatment path in this prototype."}</p>
         </div>
       </div>
 
@@ -2283,8 +2395,10 @@ function renderMacVariation(model: PrototypeModel) {
                 .map(
                   (contractor) => `
                     <th>
-                      <div class="table-col-head">${escapeHtml(contractor.name)}</div>
-                      <div class="table-col-subtle">${docChip(model, contractor.lcd, contractor.lcd, "lcd", contractor.region)}</div>
+                      <div class="table-col-stack">
+                        <div class="table-col-head">${escapeHtml(contractor.name)}</div>
+                        <div class="table-col-subtle">${docChip(model, contractor.lcd, contractor.lcd, "lcd", contractor.region)}</div>
+                      </div>
                     </th>
                   `,
                 )
@@ -2366,8 +2480,10 @@ function renderMacVariation(model: PrototypeModel) {
                 .map(
                   (contractor) => `
                     <th>
-                      <div class="table-col-head">${escapeHtml(contractor.name)}</div>
-                      <div class="table-col-subtle">${docChip(model, contractor.lcd, contractor.lcd, "lcd", contractor.region)}</div>
+                      <div class="table-col-stack">
+                        <div class="table-col-head">${escapeHtml(contractor.name)}</div>
+                        <div class="table-col-subtle">${docChip(model, contractor.lcd, contractor.lcd, "lcd", contractor.region)}</div>
+                      </div>
                     </th>
                   `,
                 )
