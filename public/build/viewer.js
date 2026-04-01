@@ -1,7 +1,8 @@
 // src/viewer.ts
 var state = {
   model: null,
-  selectedFamilyId: "pap-therapy"
+  selectedFamilyId: "pap-therapy",
+  selectedModelTab: "overview"
 };
 var app = document.querySelector("#app");
 if (!app) {
@@ -51,9 +52,6 @@ function ruleMetamodel(model) {
 function requirementMap(model) {
   return new Map(list(ruleMetamodel(model)?.requirementCatalog).map((item) => [item.id, item]));
 }
-function groupMap(model) {
-  return new Map(list(ruleMetamodel(model)?.requirementGroups).map((item) => [item.id, item]));
-}
 function familyDeltaMap(model) {
   return new Map(list(ruleMetamodel(model)?.familyDeltaSummaries).map((item) => [item.familyId, item]));
 }
@@ -66,11 +64,90 @@ function treatmentModelMap(model) {
 function currentFamily(model) {
   return familyMap(model).get(state.selectedFamilyId) ?? model.policyFamilies[0];
 }
+function currentLayeringModel(model) {
+  return layeringMap(model).get(state.selectedFamilyId) ?? model.layeringModels[0];
+}
 function currentCodeCatalog(model) {
   return codeCatalogMap(model).get(state.selectedFamilyId) ?? null;
 }
 function currentTreatmentModel(model) {
   return treatmentModelMap(model).get(treatmentIdForFamilyId(state.selectedFamilyId)) ?? null;
+}
+var jurisdictionLabels = new Map([
+  ["J5", "Jurisdiction 5"],
+  ["J6", "Jurisdiction 6"],
+  ["J8", "Jurisdiction 8"],
+  ["J15", "Jurisdiction 15"],
+  ["JE", "Jurisdiction E"],
+  ["JF", "Jurisdiction F"],
+  ["JH", "Jurisdiction H"],
+  ["JJ", "Jurisdiction J"],
+  ["JK", "Jurisdiction K"],
+  ["JL", "Jurisdiction L"],
+  ["JM", "Jurisdiction M"],
+  ["JN", "Jurisdiction N"]
+]);
+function expandJurisdictionCodes(region) {
+  const codes = region.split("/").map((item) => item.trim()).filter(Boolean);
+  if (!codes.length) {
+    return region;
+  }
+  const expanded = codes.map((code) => jurisdictionLabels.get(code) ?? code);
+  if (expanded.length === 1) {
+    return `${expanded[0]} (${codes[0]})`;
+  }
+  return `${expanded.slice(0, -1).join(", ")} and ${expanded[expanded.length - 1]} (${codes.join("/")})`;
+}
+function contractorDisplayParts(contractor) {
+  return {
+    name: contractor.name.replace(/\s*\([^)]*\)\s*$/, ""),
+    jurisdiction: expandJurisdictionCodes(contractor.region)
+  };
+}
+function friendlyAffectedMacName(name) {
+  const aliases = new Map([
+    ["WPS Insurance", "WPS Insurance, Jurisdictions 5 and 8"],
+    ["CGS Administrators", "CGS Administrators, Jurisdiction 15"],
+    ["Noridian (JE)", "Noridian, Jurisdiction E"],
+    ["Noridian (JF)", "Noridian, Jurisdiction F"],
+    ["Palmetto GBA", "Palmetto GBA, Jurisdictions J and M"],
+    ["National Government Services", "National Government Services, Jurisdictions 6 and K"],
+    ["First Coast Service Options", "First Coast Service Options, Jurisdiction N"],
+    ["Novitas Solutions", "Novitas Solutions, Jurisdictions H and L"],
+    ["all", "All modeled HGNS contractor jurisdictions"]
+  ]);
+  return aliases.get(name) ?? name;
+}
+function describeMaterialDifference(difference) {
+  if (difference.id === "billing-bmi-code-range") {
+    return {
+      label: "Billing article extends beyond LCD BMI rule",
+      description: "Noridian's companion billing article accepts BMI diagnosis codes through Z68.39 even though the Noridian LCD text still says BMI < 35. The mismatch is between that MAC's LCD text and its billing article, not between national and local policy.",
+      detail: "This is the clearest example in the prototype where claim-execution logic is broader than the local clinical text."
+    };
+  }
+  if (difference.id === "billing-modifier-52-guidance") {
+    return {
+      label: "Modifier 52 (reduced service) guidance",
+      description: "Noridian and Palmetto explicitly tell billers when to append Modifier 52, the CPT/HCPCS modifier used when only part of a service is performed. First Coast and Novitas do not give the same instruction.",
+      detail: difference.detail
+    };
+  }
+  if (difference.id === "billing-abn-modifier-guidance") {
+    return {
+      label: "ABN modifier guidance (-GA, -GX, -GY, -GZ)",
+      description: "Only Palmetto explains the Advance Beneficiary Notice modifier set and related ordering/referring NPI expectations in detail.",
+      detail: difference.detail
+    };
+  }
+  return {
+    label: difference.label ?? difference.description,
+    description: difference.description,
+    detail: difference.detail
+  };
+}
+function renderJsonPreview(value) {
+  return `<pre class="json-browser-pre">${escapeHtml(JSON.stringify(value, null, 2))}</pre>`;
 }
 function toneClass(tone) {
   return `tone-${tone}`;
@@ -234,28 +311,6 @@ function docChip(model, displayId, label = displayId, variant = "neutral", title
 function noteChip(label, variant = "neutral", title) {
   return `<span class="mini-doc-chip is-${variant}"${title ? ` title="${escapeHtml(title)}"` : ""}>${escapeHtml(label)}</span>`;
 }
-function relationVariant(relation) {
-  if (relation === "baseline")
-    return "neutral";
-  if (relation === "reuses")
-    return "teal";
-  if (relation === "narrows")
-    return "amber";
-  if (relation === "operationalizes")
-    return "blue";
-  if (relation === "adds")
-    return "plum";
-  if (relation === "differs")
-    return "rose";
-  if (relation === "governs")
-    return "ink";
-  if (relation === "codes")
-    return "ink";
-  return "neutral";
-}
-function relationChip(label, relation, title) {
-  return noteChip(label, relationVariant(relation), title);
-}
 function relationExplanation(relation) {
   if (relation === "baseline")
     return "Defines the national baseline rule.";
@@ -328,13 +383,6 @@ function renderRuleStatementCard(requirements, item) {
     </div>
   `;
 }
-function basisChip(model, ref) {
-  const displayLabel = ref.variant === "ncd" && !ref.label.startsWith("NCD ") ? `NCD ${ref.label}` : ref.variant === "lcd" && !ref.label.startsWith("LCD ") ? `LCD ${ref.label}` : ref.label;
-  if (ref.displayId) {
-    return docChip(model, ref.displayId, displayLabel, ref.variant, ref.title);
-  }
-  return noteChip(displayLabel, ref.variant, ref.title);
-}
 function renderHero(model) {
   return `
     <section class="hero panel">
@@ -358,15 +406,6 @@ function renderHero(model) {
     </section>
   `;
 }
-function renderStat(label, value, note) {
-  return `
-    <div class="stat-card">
-      <div class="stat-value">${escapeHtml(value)}</div>
-      <div class="stat-label">${escapeHtml(label)}</div>
-      <div class="stat-note">${escapeHtml(note)}</div>
-    </div>
-  `;
-}
 function renderChapterIntro(step, eyebrow, title, copy) {
   return `
     <section class="panel chapter-panel">
@@ -376,95 +415,6 @@ function renderChapterIntro(step, eyebrow, title, copy) {
       </div>
       <h2 class="chapter-title">${escapeHtml(title)}</h2>
       <p class="chapter-copy">${escapeHtml(copy)}</p>
-    </section>
-  `;
-}
-function renderMethodology(model) {
-  const rules = ruleMetamodel(model);
-  if (!rules) {
-    return "";
-  }
-  const sourceCount = model.sourceDocuments.length;
-  const responseCount = model.sourceDocuments.filter((source) => source.title.startsWith("Response to Comments")).length;
-  const articleCount = model.sourceDocuments.filter((source) => source.type === "Article" && !source.title.startsWith("Response to Comments")).length;
-  const ncdCount = model.sourceDocuments.filter((source) => source.type === "NCD").length;
-  const lcdCount = model.sourceDocuments.filter((source) => source.type === "LCD").length;
-  const modeledDocs = rules.coverageAudit?.modeledDocuments ?? rules.documentProfiles.length;
-  const totalDocs = rules.coverageAudit?.totalCuratedDocuments ?? model.sourceDocuments.length;
-  return `
-    <section class="panel">
-      <div class="section-head">
-        <div>
-          <div class="eyebrow">What Was Curated</div>
-          <h2>This Tutorial Demonstrates A Target Shape For Automation</h2>
-          <p class="section-copy">The point is not that OSA should be hand-entered forever. The point is that public CMS documents already expose enough regularity for AI agents to recover high-value structure: indications, thresholds, exclusions, provider roles, coding layers, document lineage, and policy lifecycle context.</p>
-        </div>
-      </div>
-
-      <div class="hero-stats tutorial-stats">
-        ${renderStat("CMS docs reviewed", String(totalDocs), "public source records in scope")}
-        ${renderStat("Docs modeled", `${modeledDocs}/${totalDocs}`, "documents decomposed into rule packs")}
-        ${renderStat("Requirement entities", String(rules.requirementCatalog.length), "canonical reusable policy concepts")}
-        ${renderStat("Rule packs", String(rules.documentProfiles.length), "structured document extracts")}
-      </div>
-
-      <div class="tutorial-grid tutorial-grid-3">
-        <article class="tutorial-card">
-          <div class="eyebrow">Source Material</div>
-          <h3>What Was Reviewed</h3>
-          <p>${sourceCount} public CMS records were reviewed: ${ncdCount} NCDs, ${lcdCount} LCDs, ${articleCount} companion articles, and ${responseCount} response-to-comments records. This is the public policy stack a clinician or informaticist can already inspect today.</p>
-        </article>
-        <article class="tutorial-card">
-          <div class="eyebrow">Structured Output</div>
-          <h3>What The Tutorial Makes Computable</h3>
-          <p>${rules.requirementCatalog.length} canonical requirements and ${rules.documentProfiles.length} document rule packs now let the app compare OSA policies without reading each document side by side by hand.</p>
-        </article>
-        <article class="tutorial-card">
-          <div class="eyebrow">Automation Potential</div>
-          <h3>What AI Agents Can Help Extract Today</h3>
-          <p>Good extraction today can recover thresholds, exclusions, provider roles, code tables, related-document topology, and cross-document differences. Manual review is still useful where wording conflicts, legacy variants, or revision histories need adjudication.</p>
-        </article>
-      </div>
-    </section>
-  `;
-}
-function renderTutorialOrientation() {
-  const ideas = [
-    {
-      eyebrow: "Key Idea 1",
-      title: "One disease can have multiple policy layers",
-      body: "OSA is not governed by one document. National policy defines a baseline, while local contractor policies add therapy-specific treatment paths, workflow gates, and exclusions."
-    },
-    {
-      eyebrow: "Key Idea 2",
-      title: "Different CMS documents do different jobs",
-      body: "Some documents define clinical coverage, some operationalize it, and some translate it into billing and coding instructions. The tutorial separates those roles instead of blending them together."
-    },
-    {
-      eyebrow: "Key Idea 3",
-      title: "Structure is what makes comparison easy",
-      body: "Once thresholds, exclusions, provider requirements, and code tables are normalized into the same vocabulary, differences stop being something you hunt for by eye."
-    }
-  ];
-  return `
-    <section class="panel">
-      <div class="section-head">
-        <div>
-          <div class="eyebrow">Before The Details</div>
-          <h2>Three Ideas To Keep In Mind</h2>
-          <p class="section-copy">This page is meant to teach a way of seeing policy structure. These three ideas are the mental model for everything that follows.</p>
-        </div>
-      </div>
-
-      <div class="tutorial-grid tutorial-grid-3">
-        ${ideas.map((idea) => `
-              <article class="tutorial-card">
-                <div class="eyebrow">${escapeHtml(idea.eyebrow)}</div>
-                <h3>${escapeHtml(idea.title)}</h3>
-                <p>${escapeHtml(idea.body)}</p>
-              </article>
-            `).join("")}
-      </div>
     </section>
   `;
 }
@@ -480,14 +430,14 @@ function renderCmsGlossary() {
     {
       term: "LCD",
       role: "Local contractor coverage rule",
-      detail: "A Local Coverage Determination is written by a Medicare Administrative Contractor, or MAC. LCDs can reuse the NCD, narrow it, operationalize it, or create a therapy-specific treatment path.",
+      detail: "A Local Coverage Determination is written by a Medicare Administrative Contractor, or MAC, for one contractor jurisdiction rather than one state. In practice, that means an LCD usually applies to a multi-state regional claims area. LCDs can reuse the NCD, narrow it, operationalize it, or create a therapy-specific treatment path.",
       band: "Local overlay",
       tone: "lcd"
     },
     {
-      term: "Article",
-      role: "Claim execution layer",
-      detail: "Companion billing articles translate clinical coverage into ICD-10, HCPCS/CPT, modifiers, and documentation instructions. This is often where claim logic becomes most computable.",
+      term: "CMS Article",
+      role: "Companion billing/coding record",
+      detail: "In the Medicare Coverage Database, an Article is CMS's own record type for companion billing and coding instructions. It is not a journal article. This is the layer that translates coverage into ICD-10, HCPCS/CPT, modifiers, and documentation instructions.",
       band: "Execution layer",
       tone: "article"
     },
@@ -526,43 +476,19 @@ function renderCmsGlossary() {
 
         <div class="stack-sidecar">
           <span class="tutorial-term">MAC</span>
-          <div class="stack-sidecar-body">Medicare Administrative Contractor. This is the regional payer entity that writes LCDs and associated billing articles for its jurisdictions.</div>
+          <div class="stack-sidecar-body">Medicare Administrative Contractor. This is the regional payer entity that writes LCDs and associated CMS Articles for its jurisdictions. CMS organizes these as geographic jurisdictions rather than state-by-state policies; the current CMS MAC pages describe 12 Part A/B MAC jurisdictions and 4 DME MAC jurisdictions.</div>
         </div>
       </div>
     </section>
   `;
 }
 function renderSourceLandscape(model) {
-  const rules = ruleMetamodel(model);
-  if (!rules) {
-    return "";
-  }
-  const docGroups = [
-    {
-      label: "NCDs",
-      count: model.sourceDocuments.filter((source) => source.type === "NCD").length,
-      body: "National baseline documents define the Medicare-wide diagnostic or first-line treatment floor.",
-      examples: ["240.4.1", "240.4"]
-    },
-    {
-      label: "LCDs",
-      count: model.sourceDocuments.filter((source) => source.type === "LCD").length,
-      body: "Local documents narrow, operationalize, or create therapy-specific treatment paths on top of that floor.",
-      examples: ["L33718", "L33611", "L34526", "L38310"]
-    },
-    {
-      label: "Billing Articles",
-      count: model.sourceDocuments.filter((source) => source.type === "Article" && !source.title.startsWith("Response to Comments")).length,
-      body: "Articles convert narrative coverage logic into code tables, modifiers, diagnosis lanes, and documentation expectations.",
-      examples: ["A57948", "A58075", "A56953"]
-    },
-    {
-      label: "Response Records",
-      count: model.sourceDocuments.filter((source) => source.title.startsWith("Response to Comments")).length,
-      body: "Response-to-comments records expose rollout rationale, revisions, and lifecycle context that matter for policy governance and change tracking.",
-      examples: ["A57930", "A57938", "A58070"]
-    }
-  ];
+  const recordCounts = {
+    docs: model.sourceDocuments.length,
+    ncds: model.sourceDocuments.filter((source) => source.type === "NCD").length,
+    lcds: model.sourceDocuments.filter((source) => source.type === "LCD").length,
+    articles: model.sourceDocuments.filter((source) => source.type === "Article" && !source.title.startsWith("Response to Comments")).length
+  };
   const exampleRecords = [
     {
       type: "NCD",
@@ -583,15 +509,15 @@ function renderSourceLandscape(model) {
     {
       type: "Article",
       displayId: "A57948",
-      title: "Billing and Coding for HGNS",
-      snippet: "Claims anchor on G47.33 and use companion BMI diagnosis-code lanes that can extend beyond the clinical BMI ceiling used in the LCD.",
-      meaning: "This is a claim-execution rule. It shows how billing logic can differ from the clinical rule and why articles matter analytically.",
+      title: "Billing and Coding for Hypoglossal Nerve Stimulation (HGNS)",
+      snippet: "Claims for hypoglossal nerve stimulation (HGNS) anchor on G47.33 and use companion BMI diagnosis-code lanes that can extend beyond the clinical BMI ceiling stated in the LCD text.",
+      meaning: "This is a claim-execution rule. Hypoglossal nerve stimulation, or HGNS, is the implanted upper-airway stimulation therapy used later in the tutorial. This example shows why the billing article matters: claim logic can diverge from the clinical LCD wording.",
       variant: "article"
     },
     {
       type: "Response record",
       displayId: "A58070",
-      title: "HGNS Response to Comments",
+      title: "Hypoglossal Nerve Stimulation (HGNS) Response to Comments",
       snippet: "Stakeholder feedback and the contractor’s rationale for the final wording are preserved as part of the rollout history.",
       meaning: "This is a governance record. It helps explain why a policy looks the way it does and whether a variant is current or historical.",
       variant: "article"
@@ -603,7 +529,7 @@ function renderSourceLandscape(model) {
         <div>
           <div class="eyebrow">Public Records</div>
           <h2>What Already Exists In The Public Documents</h2>
-          <p class="section-copy">CMS documents do not arrive as a neat API for clinical policy logic, but the patterns are already there. First look at one concrete example of each document type. Then look at the reusable requirement categories extracted from them.</p>
+          <p class="section-copy">This tutorial is hand-curated, but the source material is public. In this OSA prototype, ${recordCounts.docs} CMS records were reviewed, including ${recordCounts.ncds} NCDs, ${recordCounts.lcds} LCDs, and ${recordCounts.articles} billing articles. The point of the page is to show the structure those documents already contain and the kinds of extraction an AI-assisted pipeline can recover.</p>
         </div>
       </div>
 
@@ -622,52 +548,21 @@ function renderSourceLandscape(model) {
               </article>
             `).join("")}
       </div>
-
-      <div class="section-head secondary">
-        <div>
-          <h3>How Many Records Of Each Type Are In Scope</h3>
-          <p class="section-copy">After the concrete examples, these counts simply show how many records of each kind are included in the curated OSA tutorial.</p>
-        </div>
-      </div>
-
-      <div class="tutorial-grid tutorial-grid-4">
-        ${docGroups.map((group) => `
-              <article class="tutorial-card count-card">
-                <div class="count-card-head">
-                  <h3>${escapeHtml(group.label)}</h3>
-                  <span class="count-pill">${group.count} in scope</span>
-                </div>
-                <p>${escapeHtml(group.body)}</p>
-                <div class="delta-counts">${group.examples.map((example) => noteChip(example, "neutral")).join("")}</div>
-              </article>
-            `).join("")}
-      </div>
-
-      <div class="tutorial-grid tutorial-grid-4">
-        ${rules.requirementGroups.map((group) => {
-    const count = rules.requirementCatalog.filter((item) => item.groupId === group.id).length;
-    const exampleEntry = rules.requirementCatalog.find((item) => item.groupId === group.id);
-    return `
-              <article class="tutorial-card count-card">
-                <div class="count-card-head">
-                  <h3>${escapeHtml(group.label)}</h3>
-                  <span class="count-pill">${count} extracted</span>
-                </div>
-                <p>${escapeHtml(group.description)}</p>
-                ${exampleEntry ? `<div class="delta-counts">${noteChip(`Example: ${exampleEntry.shortLabel}`, "neutral")}</div>` : ""}
-              </article>
-            `;
-  }).join("")}
-      </div>
     </section>
   `;
 }
-function renderDocumentRuleCard(model, profile) {
+function renderDocumentRuleCard(model, profile, options = {}) {
   const requirements = requirementMap(model);
   return `
     <article class="doc-rule-card">
       <div class="doc-rule-head">
         <div>
+          ${options.marker ? `
+                <div class="doc-rule-marker-row">
+                  <span class="doc-rule-marker">${escapeHtml(options.marker)}</span>
+                  ${options.synopsis ? `<span class="doc-rule-marker-copy">${escapeHtml(options.synopsis)}</span>` : ""}
+                </div>
+              ` : ""}
           <div class="delta-counts">
             ${noteChip(profile.scopeLevel, profile.scopeLevel === "national" ? "ncd" : profile.scopeLevel === "local" ? "lcd" : "article")}
             ${noteChip(profile.roleInPathway, "neutral")}
@@ -700,6 +595,18 @@ function renderNcdTutorial(model) {
     return "";
   }
   const ncdProfiles = ["ncd-sleep-testing", "ncd-cpap"].map((id) => rules.documentProfiles.find((profile) => profile.documentId === id)).filter((profile) => Boolean(profile));
+  const atGlanceItems = [
+    {
+      marker: "1",
+      label: "Diagnosis floor",
+      copy: "Which sleep tests count and what severity logic can establish OSA in coverage terms."
+    },
+    {
+      marker: "2",
+      label: "First-line PAP rule",
+      copy: "How the national CPAP pathway defines who qualifies and the basic trial concept."
+    }
+  ];
   return `
     <section class="panel">
       <div class="section-head">
@@ -710,8 +617,45 @@ function renderNcdTutorial(model) {
         </div>
       </div>
 
+      <div class="glance-row">
+        ${atGlanceItems.map((item) => `
+              <div class="glance-item">
+                <span class="glance-index">${escapeHtml(item.marker)}</span>
+                <div class="glance-copy">
+                  <strong>${escapeHtml(item.label)}</strong>
+                  <span>${escapeHtml(item.copy)}</span>
+                </div>
+              </div>
+            `).join("")}
+      </div>
+
       <div class="tutorial-grid tutorial-grid-2">
-        ${ncdProfiles.map((profile) => renderDocumentRuleCard(model, profile)).join("")}
+        ${ncdProfiles.map((profile, index) => renderDocumentRuleCard(model, profile, {
+    marker: atGlanceItems[index]?.marker,
+    synopsis: atGlanceItems[index]?.label
+  })).join("")}
+      </div>
+    </section>
+  `;
+}
+function renderInsights(model) {
+  return `
+    <section class="panel">
+      <div class="section-head">
+        <div>
+          <div class="eyebrow">Why This Model Matters</div>
+          <h2>Abstraction Pays Off</h2>
+        </div>
+      </div>
+
+      <div class="insight-grid">
+        ${model.insights.map((insight) => `
+              <article class="insight-card">
+                <h3>${escapeHtml(insight.title)}</h3>
+                <p>${escapeHtml(insight.body)}</p>
+                <div class="source-row">${sourceLinks(model, insight.sourceIds)}</div>
+              </article>
+            `).join("")}
       </div>
     </section>
   `;
@@ -837,506 +781,10 @@ function renderFamilyFocus(model) {
     </section>
   `;
 }
-function renderRuleSemantics(model) {
-  const rules = ruleMetamodel(model);
-  if (!rules) {
-    return "";
-  }
-  const selectedSummary = familyDeltaMap(model).get(state.selectedFamilyId);
-  return `
-    <section class="panel">
-      <div class="section-head">
-        <div>
-          <div class="eyebrow">How The Tutorial Thinks</div>
-          <h2>Coverage Semantics</h2>
-          <p class="section-copy">This abstraction layer is the bridge from unstructured CMS narrative to computable comparison. It lets the tutorial ask whether a local policy is truly new logic, a stricter version of the NCD, a local workflow translation, or just a billing-layer implementation detail.</p>
-        </div>
-      </div>
-
-      <div class="worked-example">
-        <div class="section-head secondary">
-          <div>
-            <h3>Worked Example: Keeping PAP Coverage After The Trial</h3>
-            <p class="section-copy">This is what the abstraction is doing. Start with one concrete policy relationship: the national CPAP rule creates an initial trial period, and the local PAP LCD turns the question of keeping coverage after that trial into measurable adherence and follow-up rules.</p>
-          </div>
-        </div>
-
-        <div class="tutorial-grid tutorial-grid-2">
-          <article class="tutorial-card">
-            <div class="eyebrow">In The Source Documents</div>
-            <div class="typed-list">
-              <div class="typed-list-item">
-                <strong>NCD 240.4</strong>
-                <div>Initial coverage is limited to a 12-week trial period.</div>
-              </div>
-              <div class="typed-list-item">
-                <strong>LCD L33718</strong>
-                <div>Continued PAP coverage depends on a 90-day continuation window, objective adherence of at least 4 hours per night on 70% of nights, and follow-up between days 31 and 91.</div>
-              </div>
-            </div>
-          </article>
-
-          <article class="tutorial-card">
-            <div class="eyebrow">In The Structured Model</div>
-            <div class="delta-counts">
-              ${noteChip("Requirement: CPAP trial window", "neutral")}
-              ${relationChip("National baseline", "baseline")}
-              ${relationChip("Operationalizes", "operationalizes")}
-              ${noteChip("Requirement: objective adherence threshold", "neutral")}
-            </div>
-            <p class="section-copy">Instead of reading two documents and inferring the connection, the model records the relationship explicitly: the NCD defines the baseline concept, and the LCD operationalizes it into auditable workflow thresholds.</p>
-          </article>
-        </div>
-      </div>
-
-      <div class="rule-layer-grid">
-        ${rules.abstractionLayers.map((layer) => `
-              <article class="rule-layer-card">
-                <div class="eyebrow">${escapeHtml(layer.id)}</div>
-                <h3>${escapeHtml(layer.label)}</h3>
-                <p>${escapeHtml(layer.description)}</p>
-              </article>
-            `).join("")}
-      </div>
-
-      <div class="rule-legend-grid">
-        ${rules.relationLegend.map((item) => `
-              <article class="rule-legend-card">
-                <div class="rule-legend-top">
-                  ${relationChip(item.label, item.id)}
-                </div>
-                <p>${escapeHtml(item.meaning)}</p>
-              </article>
-            `).join("")}
-      </div>
-
-      <div class="section-head secondary">
-        <div>
-          <h3>How Each Treatment Path Changes The National Baseline</h3>
-          <p class="section-copy">Here, a treatment path means one therapy option considered after the national baseline, such as PAP, oral appliance, surgery, or HGNS. Each card summarizes whether that path mostly reuses the national rule, narrows it, operationalizes it, or adds genuinely new local logic.</p>
-        </div>
-      </div>
-
-      <div class="delta-grid">
-        ${rules.familyDeltaSummaries.map((summary) => {
-    const family = familyMap(model).get(summary.familyId);
-    const active = summary.familyId === state.selectedFamilyId;
-    const countEntries = Object.entries(summary.counts).filter(([, value]) => value > 0);
-    const relationLegend = new Map(rules.relationLegend.map((item) => [item.id, item]));
-    const layering = layeringMap(model).get(summary.familyId);
-    const localChanges = list(layering?.overlayCriteria).slice(0, 3);
-    const inherited = list(layering?.baselineCriteria).slice(0, 1);
-    const relationSummary = countEntries.map(([relation, value]) => {
-      const relationInfo = relationLegend.get(relation);
-      return `${value} ${relationInfo ? relationInfo.label.toLowerCase() : relation}`;
-    }).join(", ");
-    return `
-              <article class="delta-card ${active ? "is-active" : ""}">
-                <div class="delta-card-head">
-                  <div>
-                    <div class="eyebrow">${escapeHtml(family?.stage ?? "Branch")}</div>
-                    <h3>${escapeHtml(family?.label ?? summary.familyId)}</h3>
-                  </div>
-                </div>
-                <p>${escapeHtml(summary.takeaway)}</p>
-                ${inherited.length ? `
-                      <div class="delta-detail-label">Inherited foundation</div>
-                      <div class="delta-detail-text">${escapeHtml(inherited[0].text)}</div>
-                    ` : ""}
-                ${localChanges.length ? `
-                      <div class="delta-detail-label">Concrete local changes</div>
-                      <div class="delta-example-list">
-                        ${localChanges.map((criterion) => `
-                              <div class="delta-example-item">
-                                <strong>${escapeHtml(relationLeadLabel(criterion.relation))}:</strong>
-                                <span>${escapeHtml(criterion.text)}</span>
-                              </div>
-                            `).join("")}
-                      </div>
-                    ` : ""}
-                ${relationSummary ? `<div class="delta-summary-line">Structured comparison captured here: ${escapeHtml(relationSummary)}.</div>` : ""}
-                <div class="delta-sources">
-                  <div class="source-row">${sourceLinks(model, [...summary.baselineDocumentIds, ...summary.localDocumentIds])}</div>
-                </div>
-              </article>
-            `;
-  }).join("")}
-      </div>
-
-      <div class="section-head secondary">
-        <div>
-          <h3>Analytic Questions This Model Supports</h3>
-        </div>
-      </div>
-
-      <div class="question-grid">
-        ${rules.analyticQuestions.map((question) => `
-              <article class="insight-card">
-                <h3>${escapeHtml(question.prompt)}</h3>
-                <p>${escapeHtml(question.answer)}</p>
-                <div class="delta-counts">
-                  ${question.viewIds.map((viewId) => noteChip(viewId, "neutral")).join("")}
-                </div>
-              </article>
-            `).join("")}
-      </div>
-    </section>
-  `;
-}
-function renderRequirementDictionary(model) {
-  const rules = ruleMetamodel(model);
-  if (!rules) {
-    return "";
-  }
-  const selectedFamilyId = state.selectedFamilyId;
-  const selectedFamily = currentFamily(model);
-  return `
-    <section class="panel">
-      <div class="section-head">
-        <div>
-          <div class="eyebrow">Requirement Dictionary</div>
-          <h2>What The Requirement Dictionary Adds</h2>
-          <p class="section-copy">This layer exists to support reuse and comparison. Instead of repeating the same idea across many documents, the model gives that idea one canonical home. For the tutorial, the useful view is the group structure and a few representative examples, not a wall of near-duplicate cards.</p>
-        </div>
-      </div>
-
-      <div class="tutorial-grid tutorial-grid-4">
-        ${rules.requirementGroups.map((group) => {
-    const entries = rules.requirementCatalog.filter((entry) => entry.groupId === group.id);
-    const activeCount = entries.filter((entry) => entry.usedByFamilies.includes(selectedFamilyId)).length;
-    return `
-              <article class="tutorial-card count-card ${activeCount ? "is-active" : ""}">
-                <div class="count-card-head">
-                  <h3>${escapeHtml(group.label)}</h3>
-                  <span class="count-pill">${entries.length} entities</span>
-                </div>
-                <p>${escapeHtml(group.description)}</p>
-                <div class="requirement-subhead">${activeCount ? `${activeCount} used by ${escapeHtml(selectedFamily.label)}` : "Representative examples"}</div>
-                <div class="typed-list compact-list">
-                  ${entries.slice(0, 3).map((item) => `
-                        <div class="typed-list-item">
-                          <strong>${escapeHtml(item.label)}</strong>
-                          <div class="variation-note">${escapeHtml(item.definition)}</div>
-                        </div>
-                      `).join("")}
-                </div>
-              </article>
-            `;
-  }).join("")}
-      </div>
-    </section>
-  `;
-}
-function renderFamilyLineage(model) {
-  const rules = ruleMetamodel(model);
-  if (!rules) {
-    return "";
-  }
-  const requirements = requirementMap(model);
-  const groups = groupMap(model);
-  return `
-    <section class="panel">
-      <div class="section-head">
-        <div>
-          <div class="eyebrow">Comparative Surface</div>
-          <h2>Requirement Lineage Matrix</h2>
-          <p class="section-copy">Rows are canonical requirements. Columns are treatment paths. Each cell says whether that path reuses the national rule, narrows it, operationalizes it, or introduces genuinely different local logic.</p>
-        </div>
-      </div>
-
-      <div class="matrix-wrap">
-        <table class="matrix-table lineage-table">
-          <thead>
-            <tr>
-              <th>Requirement</th>
-              ${rules.familyLineage.columns.map((column) => `
-                    <th class="${column.familyId === state.selectedFamilyId ? "is-current" : ""}">
-                      <div class="table-col-head">${escapeHtml(column.label)}</div>
-                    </th>
-                  `).join("")}
-            </tr>
-          </thead>
-          <tbody>
-            ${rules.familyLineage.rows.map((row) => {
-    const requirement = requirements.get(row.requirementId);
-    const group = requirement ? groups.get(requirement.groupId) : null;
-    return `
-                  <tr>
-                    <td class="lineage-requirement-cell">
-                      <div class="variation-label">${escapeHtml(requirement?.label ?? row.requirementId)}</div>
-                      ${group ? `<div class="table-col-subtle">${escapeHtml(group.label)}</div>` : ""}
-                      <div class="variation-note">${escapeHtml(row.whyItMatters)}</div>
-                    </td>
-                    ${rules.familyLineage.columns.map((column) => {
-      const cell = row.cells.find((item) => item.familyId === column.familyId);
-      if (!cell) {
-        return `<td class="lineage-cell"><div class="variation-note">—</div></td>`;
-      }
-      return `
-                          <td class="lineage-cell ${column.familyId === state.selectedFamilyId ? "is-current" : ""}">
-                            <div class="delta-counts">
-                              ${relationChip(cell.relation, cell.relation)}
-                            </div>
-                            <div class="lineage-value">${escapeHtml(cell.valueSummary)}</div>
-                            <div class="source-row">${sourceLinks(model, cell.sourceDocumentIds)}</div>
-                          </td>
-                        `;
-    }).join("")}
-                  </tr>
-                `;
-  }).join("")}
-          </tbody>
-        </table>
-      </div>
-    </section>
-  `;
-}
-function renderSelectedFamilyRuleLedger(model) {
-  const rules = ruleMetamodel(model);
-  if (!rules) {
-    return "";
-  }
-  const selectedFamily = currentFamily(model);
-  const summary = familyDeltaMap(model).get(state.selectedFamilyId);
-  const profileIds = new Set([
-    ...summary?.baselineDocumentIds ?? [],
-    ...summary?.localDocumentIds ?? []
-  ]);
-  const profiles = list(rules.documentProfiles).filter((profile) => profile.familyId === state.selectedFamilyId || profileIds.has(profile.documentId)).sort((left, right) => {
-    const scopeOrder = new Map([
-      ["national", 0],
-      ["local", 1],
-      ["billing", 2]
-    ]);
-    return (scopeOrder.get(left.scopeLevel) ?? 9) - (scopeOrder.get(right.scopeLevel) ?? 9) || left.displayId.localeCompare(right.displayId);
-  });
-  const requirements = requirementMap(model);
-  return `
-    <section class="panel">
-      <div class="section-head">
-        <div>
-          <div class="eyebrow">Document Rule Packs</div>
-          <h2>${escapeHtml(selectedFamily.label)} Rule Ledger</h2>
-          <p class="section-copy">The selected treatment path now resolves to structured document packs. Each card shows which canonical requirements the document touches and whether it is baseline, narrowing, operationalization, a new therapy rule, or a coding article.</p>
-        </div>
-      </div>
-
-      <div class="doc-ledger-grid">
-        ${profiles.map((profile) => `
-            <article class="doc-rule-card">
-              <div class="doc-rule-head">
-                <div>
-                  <div class="delta-counts">
-                    ${noteChip(profile.scopeLevel, profile.scopeLevel === "national" ? "ncd" : profile.scopeLevel === "local" ? "lcd" : "article")}
-                    ${noteChip(profile.roleInPathway, "neutral")}
-                  </div>
-                  <h3>${docChip(model, profile.displayId, profile.displayId, profile.type === "NCD" ? "ncd" : profile.type === "LCD" ? "lcd" : "article", profile.title)}</h3>
-                </div>
-              </div>
-
-              <p class="doc-rule-focus">${escapeHtml(profile.focus)}</p>
-
-              ${profile.baselineDocumentIds.length ? `
-                    <div class="requirement-subhead">Compared against</div>
-                    <div class="delta-counts">
-                      ${profile.baselineDocumentIds.map((documentId) => {
-    const source = sourceMap(model).get(documentId);
-    return source ? docChip(model, source.displayId, source.displayId, "neutral", source.title) : "";
-  }).join("")}
-                    </div>
-                  ` : ""}
-
-              <div class="rule-statement-stack">
-                ${profile.statements.map((item) => renderRuleStatementCard(requirements, item)).join("")}
-              </div>
-            </article>
-          `).join("")}
-      </div>
-    </section>
-  `;
-}
-function renderEligibilityLandscape(model) {
-  const treatments = ["cpap", "hgns", "oral-appliance", "surgery"].map((id) => treatmentModelMap(model).get(id)).filter((item) => Boolean(item));
-  const currentTreatmentId = treatmentIdForFamilyId(state.selectedFamilyId);
-  const maxAhi = 80;
-  const hgnsFamilyTitle = "Normalized from the aligned HGNS LCD family: L38528, L38307, L38310, L38312, L38276, L38387, L38398, and L38385.";
-  const toneByTreatment = new Map(model.policyFamilies.map((family) => [treatmentIdForFamilyId(family.id), family.tone]));
-  const rangeBars = (treatment) => {
-    if (treatment.id === "cpap") {
-      return [
-        { min: 5, max: 14, label: "Mild + comorbidities", color: "var(--amber)" },
-        { min: 15, max: maxAhi, label: "Moderate-severe", color: "var(--teal)" }
-      ];
-    }
-    if (treatment.id === "hgns") {
-      return [{ min: 15, max: 65, label: "AHI 15-65 only", color: "var(--blue)" }];
-    }
-    if (treatment.id === "oral-appliance") {
-      return [
-        { min: 5, max: 14, label: "Mild + comorbidities", color: "var(--amber)" },
-        { min: 15, max: 30, label: "Moderate", color: "var(--teal)" },
-        { min: 30, max: maxAhi, label: "Severe + PAP failure", color: "var(--plum)" }
-      ];
-    }
-    if (treatment.id === "surgery") {
-      return [{ min: 15, max: maxAhi, label: "RDI >= 15", color: "var(--rose)" }];
-    }
-    return [];
-  };
-  const cell = (treatmentId, value, refs) => `
-    <td class="eligibility-cell ${currentTreatmentId === treatmentId ? "is-current" : ""}">
-      <div class="eligibility-value">${value}</div>
-      <div class="eligibility-sources">${refs.map((ref) => basisChip(model, ref)).join("")}</div>
-    </td>
-  `;
-  return `
-    <section class="panel panel-eligibility">
-      <div class="section-head">
-        <div>
-          <div class="eyebrow">Typed Comparison</div>
-          <h2>Eligibility Landscape</h2>
-          <p class="section-copy">Integrated treatment thresholds, prerequisites, and coverage gates derived from the richer typed model. The current treatment path stays highlighted so the disease browser and comparison view remain connected.</p>
-        </div>
-      </div>
-
-      <div class="comparison-chips">
-        ${basisChip(model, { label: "NCD 240.4", variant: "ncd", displayId: "240.4", title: "National CPAP baseline" })}
-        ${basisChip(model, { label: "LCD L33718", variant: "lcd", displayId: "L33718", title: "PAP Devices LCD" })}
-        ${basisChip(model, { label: "HGNS LCD set", variant: "group", title: hgnsFamilyTitle })}
-        ${basisChip(model, { label: "Mixed basis", variant: "neutral", title: "Some cells combine a national floor with local operational narrowing." })}
-      </div>
-
-      <div class="eligibility-basis-note">
-        <strong>How to read the source pills</strong>
-        <span>Pills are source attribution, not extra criteria. NCD pills mean the value comes from the national floor. LCD pills mean the value is defined or operationalized at the local policy layer. If both appear in one cell, the displayed rule is synthesized from both layers.</span>
-      </div>
-
-      <div class="range-ladder">
-        ${treatments.map((treatment) => {
-    const bars = rangeBars(treatment);
-    return `
-              <div class="range-row ${currentTreatmentId === treatment.id ? "is-current" : ""}">
-                <div class="range-label">${escapeHtml(treatment.shortLabel)}</div>
-                <div class="range-track">
-                  ${bars.map((bar) => {
-      const left = bar.min / maxAhi * 100;
-      const width = (Math.min(bar.max, maxAhi) - bar.min) / maxAhi * 100;
-      return `<div class="range-bar tone-${escapeHtml(toneByTreatment.get(treatment.id) ?? "blue")}" style="left:${left}%;width:${width}%;background:${bar.color}">${escapeHtml(bar.label)}</div>`;
-    }).join("")}
-                </div>
-              </div>
-            `;
-  }).join("")}
-        <div class="range-axis">
-          <span>0</span>
-          <span>5</span>
-          <span>15</span>
-          <span>30</span>
-          <span>65</span>
-          <span>80+</span>
-        </div>
-        <div class="range-axis-caption">AHI or RDI events per hour</div>
-      </div>
-
-      <div class="matrix-wrap">
-        <table class="matrix-table eligibility-table">
-          <thead>
-            <tr>
-              <th>Requirement</th>
-              ${treatments.map((treatment) => `
-                    <th class="${currentTreatmentId === treatment.id ? "is-current" : ""}">
-                      <div class="table-col-head">${escapeHtml(treatment.shortLabel)}</div>
-                      <div class="table-col-subtle">${escapeHtml(treatment.category)}</div>
-                    </th>
-                  `).join("")}
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>Minimum AHI</td>
-              ${cell("cpap", "5", [{ label: "240.4", variant: "ncd", displayId: "240.4", title: "AHI 5-14 branch requires symptoms or comorbidities." }])}
-              ${cell("hgns", "15", [{ label: "HGNS LCD set", variant: "group", title: hgnsFamilyTitle }])}
-              ${cell("oral-appliance", "5", [{ label: "L33611", variant: "lcd", displayId: "L33611", title: "Oral Appliances for Obstructive Sleep Apnea" }])}
-              ${cell("surgery", "15 (RDI)", [{ label: "L34526", variant: "lcd", displayId: "L34526", title: "Surgical Treatment of OSA" }])}
-            </tr>
-            <tr>
-              <td>Maximum AHI</td>
-              ${cell("cpap", "None", [{ label: "240.4", variant: "ncd", displayId: "240.4", title: "No upper AHI ceiling in the CPAP NCD." }])}
-              ${cell("hgns", "65", [{ label: "HGNS LCD set", variant: "group", title: hgnsFamilyTitle }])}
-              ${cell("oral-appliance", "None", [{ label: "L33611", variant: "lcd", displayId: "L33611", title: "No explicit upper AHI ceiling; severe disease branches on PAP status." }])}
-              ${cell("surgery", "None", [{ label: "L34526", variant: "lcd", displayId: "L34526", title: "No explicit upper RDI ceiling in the surgery LCD." }])}
-            </tr>
-            <tr>
-              <td>Minimum age</td>
-              ${cell("cpap", "Adult", [{ label: "240.4", variant: "ncd", displayId: "240.4", title: "The CPAP NCD addresses adult OSA." }])}
-              ${cell("hgns", "22", [{ label: "HGNS LCD set", variant: "group", title: hgnsFamilyTitle }])}
-              ${cell("oral-appliance", "Not fixed", [{ label: "L33611", variant: "lcd", displayId: "L33611" }])}
-              ${cell("surgery", "Not fixed", [{ label: "L34526", variant: "lcd", displayId: "L34526" }])}
-            </tr>
-            <tr>
-              <td>Maximum BMI</td>
-              ${cell("cpap", "No ceiling", [{ label: "240.4", variant: "ncd", displayId: "240.4", title: "No CPAP BMI ceiling in the NCD." }])}
-              ${cell("hgns", "< 35", [{ label: "HGNS LCD set", variant: "group", title: hgnsFamilyTitle }])}
-              ${cell("oral-appliance", "No ceiling", [{ label: "L33611", variant: "lcd", displayId: "L33611" }])}
-              ${cell("surgery", "No ceiling", [{ label: "L34526", variant: "lcd", displayId: "L34526" }])}
-            </tr>
-            <tr>
-              <td>CPAP failure required</td>
-              ${cell("cpap", "N/A first-line", [{ label: "240.4", variant: "ncd", displayId: "240.4", title: "CPAP is itself the national first-line therapy." }])}
-              ${cell("hgns", "Required", [{ label: "HGNS LCD set", variant: "group", title: hgnsFamilyTitle }])}
-              ${cell("oral-appliance", "Conditional", [{ label: "L33611", variant: "lcd", displayId: "L33611", title: "Required only for the severe AHI branch or contraindication path." }])}
-              ${cell("surgery", "Required", [{ label: "L34526", variant: "lcd", displayId: "L34526" }])}
-            </tr>
-            <tr>
-              <td>Sleep-test rule</td>
-              ${cell("cpap", "Qualifying PSG or HST", [
-    { label: "240.4.1", variant: "ncd", displayId: "240.4.1", title: "National sleep-testing floor" },
-    { label: "240.4", variant: "ncd", displayId: "240.4", title: "CPAP qualification uses those covered testing pathways." }
-  ])}
-              ${cell("hgns", "PSG within 24 months", [{ label: "HGNS LCD set", variant: "group", title: hgnsFamilyTitle }])}
-              ${cell("oral-appliance", "Medicare-covered sleep test", [{ label: "L33611", variant: "lcd", displayId: "L33611" }])}
-              ${cell("surgery", "AASM-certified lab", [{ label: "L34526", variant: "lcd", displayId: "L34526" }])}
-            </tr>
-            <tr>
-              <td>Trial period</td>
-              ${cell("cpap", "90-day continuation window", [
-    { label: "240.4", variant: "ncd", displayId: "240.4", title: "National 12-week trial period." },
-    { label: "L33718", variant: "lcd", displayId: "L33718", title: "Operationalized as a 90-day adherence window." }
-  ])}
-              ${cell("hgns", "None", [{ label: "HGNS LCD set", variant: "group", title: hgnsFamilyTitle }])}
-              ${cell("oral-appliance", "None", [{ label: "L33611", variant: "lcd", displayId: "L33611" }])}
-              ${cell("surgery", "None", [{ label: "L34526", variant: "lcd", displayId: "L34526" }])}
-            </tr>
-            <tr>
-              <td>Adherence monitoring</td>
-              ${cell("cpap", ">=4h/night, 70%", [{ label: "L33718", variant: "lcd", displayId: "L33718", title: "Objective adherence rule from the PAP LCD." }])}
-              ${cell("hgns", "N/A", [{ label: "HGNS LCD set", variant: "group", title: hgnsFamilyTitle }])}
-              ${cell("oral-appliance", "N/A", [{ label: "L33611", variant: "lcd", displayId: "L33611" }])}
-              ${cell("surgery", "N/A", [{ label: "L34526", variant: "lcd", displayId: "L34526" }])}
-            </tr>
-            <tr>
-              <td>Anatomy assessment</td>
-              ${cell("cpap", "Not primary", [{ label: "240.4", variant: "ncd", displayId: "240.4" }])}
-              ${cell("hgns", "DISE required", [{ label: "HGNS LCD set", variant: "group", title: hgnsFamilyTitle }])}
-              ${cell("oral-appliance", "Not primary", [{ label: "L33611", variant: "lcd", displayId: "L33611" }])}
-              ${cell("surgery", "Obstruction site required", [{ label: "L34526", variant: "lcd", displayId: "L34526" }])}
-            </tr>
-            <tr>
-              <td>Specialist requirement</td>
-              ${cell("cpap", "Treating practitioner", [{ label: "240.4", variant: "ncd", displayId: "240.4" }])}
-              ${cell("hgns", "Otolaryngologist + sleep physician", [{ label: "HGNS LCD set", variant: "group", title: hgnsFamilyTitle }])}
-              ${cell("oral-appliance", "Licensed dentist", [{ label: "L33611", variant: "lcd", displayId: "L33611" }])}
-              ${cell("surgery", "Qualified surgeon", [{ label: "L34526", variant: "lcd", displayId: "L34526" }])}
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </section>
-  `;
-}
 function renderMacVariation(model) {
   const comparison = model.crossMacComparison;
   const macTables = model.perMacCodeTables;
+  const rules = ruleMetamodel(model);
   if (!comparison || !macTables?.hgns?.length) {
     return "";
   }
@@ -1345,7 +793,9 @@ function renderMacVariation(model) {
   const currentFamilyIsHgns = state.selectedFamilyId === "hgns";
   const codeRows = list(macTables.hgns);
   const realDifferences = list(comparison.realDifferences);
-  const articleByMac = new Map(codeRows.map((row) => [row.mac, row]));
+  const contractorVariance = rules?.contractorVariance;
+  const varianceDimensions = new Map(list(contractorVariance?.dimensions).map((item) => [item.id, item.label]));
+  const clinicalVarianceRows = list(contractorVariance?.rows).filter((row) => row.dimensionId !== "billing");
   const contractorKeyFromArticle = (displayId) => {
     if (displayId === "A57949") {
       return "noridian-jf";
@@ -1418,19 +868,29 @@ function renderMacVariation(model) {
     values.forEach((value) => counts.set(value, (counts.get(value) ?? 0) + 1));
     return [...counts.entries()].sort((left, right) => right[1] - left[1]);
   };
+  const renderContractorHeader = (contractor) => {
+    const parts = contractorDisplayParts(contractor);
+    return `
+      <div class="table-col-stack">
+        <div class="table-col-head">${escapeHtml(parts.name)}</div>
+        <div class="table-col-subtle">${escapeHtml(parts.jurisdiction)}</div>
+        <div class="table-col-doc">${docChip(model, contractor.lcd, contractor.lcd, "lcd", `${parts.name} LCD`)}</div>
+      </div>
+    `;
+  };
   const valuePill = (value) => {
     const tone = value === "Current article" ? "teal" : value === "Retired legacy article" ? "rose" : value === "Aligned" ? "teal" : value === "Above clinical cap" ? "amber" : value === "Yes" ? "blue" : value === "No" ? "muted" : "muted";
     return `<span class="value-pill is-${tone}">${escapeHtml(value)}</span>`;
   };
   const variationRows = [
     {
-      label: "Billing article modeled",
-      description: "Whether the integrated dataset includes a billing article for that contractor.",
+      label: "Companion billing article curated",
+      description: "Whether the integrated dataset includes a companion billing article for that contractor jurisdiction.",
       values: contractors.map((contractor) => billingByContractor.get(contractor.id) ? "Yes" : "No")
     },
     {
-      label: "Article record used here",
-      description: "Whether the modeled article is the current billing article or a retired legacy record retained for comparison.",
+      label: "Billing article status",
+      description: "Whether the record shown here is the current billing article or an older retired article kept only for comparison.",
       values: contractors.map((contractor) => {
         const article = billingByContractor.get(contractor.id);
         if (!article) {
@@ -1441,15 +901,15 @@ function renderMacVariation(model) {
     },
     {
       label: "Billing BMI ceiling",
-      description: "Maximum BMI represented in the coded BMI diagnosis range for HGNS billing.",
+      description: "Maximum BMI represented in the coded BMI diagnosis range for hypoglossal nerve stimulation billing.",
       values: contractors.map((contractor) => {
         const row = contractorCodeRow.get(contractor.id);
         return row?.bmiMaxValue != null ? row.bmiMaxValue.toFixed(1) : "Not modeled";
       })
     },
     {
-      label: "BMI coding aligned to LCD clinical rule",
-      description: "Whether the coded BMI ceiling stays inside the clinical BMI < 35 LCD rule.",
+      label: "Billing article aligned with LCD text",
+      description: "Whether the coded BMI ceiling stays inside the LCD's clinical BMI < 35 rule.",
       values: contractors.map((contractor) => {
         const row = contractorCodeRow.get(contractor.id);
         if (row?.bmiMaxValue == null) {
@@ -1459,7 +919,7 @@ function renderMacVariation(model) {
       })
     },
     {
-      label: "Legacy CPT 64568 present",
+      label: "Legacy CPT 64568 reference",
       description: "Flags legacy article variants that still carry CPT 64568.",
       values: contractors.map((contractor) => {
         const row = contractorCodeRow.get(contractor.id);
@@ -1492,10 +952,6 @@ function renderMacVariation(model) {
   const clinicalDiffCount = realDifferences.filter((item) => item.kind === "clinical").length;
   const billingDiffCount = realDifferences.filter((item) => item.kind === "billing").length;
   const governanceDiffCount = realDifferences.filter((item) => item.kind === "governance").length;
-  const divergenceGroups = differenceGroupDefs.map((group) => ({
-    ...group,
-    items: realDifferences.filter((item) => item.kind === group.id)
-  })).filter((group) => group.items.length);
   const retiredMacCount = new Set(realDifferences.filter((item) => item.id === "governance-retired-document").flatMap((item) => item.affectedMacs)).size;
   const currentMacCount = contractors.length - retiredMacCount;
   return `
@@ -1503,8 +959,8 @@ function renderMacVariation(model) {
       <div class="section-head">
         <div>
           <div class="eyebrow">Variation Surface</div>
-          <h2>HGNS LCDs Mostly Align Clinically. Here Is Where They Actually Diverge.</h2>
-          <p class="section-copy">At the normalized clinical-core level, all eight modeled HGNS LCDs include the same main requirements. The meaningful spread is narrower and easier to name: a few clinical-rule wording differences, a larger set of billing-article differences, and some lifecycle or document-structure differences. These columns are MAC jurisdictions, not states. This prototype shows ${currentMacCount} current HGNS LCDs plus ${retiredMacCount} retired legacy LCD retained for comparison. ${currentFamilyIsHgns ? "This treatment path is in focus." : "The view stays visible because HGNS is the only multi-MAC treatment path in this prototype."}</p>
+          <h2>Hypoglossal Nerve Stimulation (HGNS) LCDs Mostly Align Clinically. Here Is Where They Actually Diverge.</h2>
+          <p class="section-copy">At the normalized clinical-core level, all eight modeled hypoglossal nerve stimulation LCDs include the same main requirements. The meaningful spread is narrower and easier to name: a few clinical wording or provider-rule differences, a larger set of billing-article differences, and some lifecycle or document-structure differences. These columns are contractor jurisdictions, not states. This prototype shows ${currentMacCount} current HGNS LCDs plus ${retiredMacCount} retired legacy LCD retained for comparison. ${currentFamilyIsHgns ? "This treatment path is in focus." : "The view stays visible because HGNS is the only multi-jurisdiction treatment path in this prototype."}</p>
         </div>
       </div>
 
@@ -1518,46 +974,94 @@ function renderMacVariation(model) {
         ${governanceDiffCount ? noteChip(`${governanceDiffCount} lifecycle / structure differences`, "neutral") : ""}
       </div>
 
-      <div class="variation-summary-callout">
-        <strong>${escapeHtml(comparison.verdictSummary ?? "Clinical-core presence is aligned, but the integrated model still captures real contractor variation.")}</strong>
-        <span>The checkmark matrix answers only one question: does each contractor LCD include this normalized core requirement at all? The concrete divergences are surfaced first below, so you do not have to infer them from identical checkmarks.</span>
+      <div class="tutorial-grid tutorial-grid-3">
+        <article class="tutorial-card">
+          <div class="eyebrow">Term That Matters Here</div>
+          <h3>What HGNS means</h3>
+          <p>HGNS stands for hypoglossal nerve stimulation, the implanted upper-airway stimulation therapy used for selected patients with obstructive sleep apnea after CPAP failure or intolerance.</p>
+        </article>
+        <article class="tutorial-card">
+          <div class="eyebrow">How To Read The Columns</div>
+          <h3>What JE, JF, JJ, and similar labels mean</h3>
+          <p>Those labels are Medicare contractor jurisdictions, not states. Each contractor LCD usually governs a multi-state regional claims area, so the comparison is across contractor regions rather than 50 separate state policies.</p>
+        </article>
+        <article class="tutorial-card">
+          <div class="eyebrow">Why This Becomes Analytic</div>
+          <h3>When an LCD and billing article part ways</h3>
+          <p>The clearest mismatch in this prototype is Noridian's BMI handling: the LCD text still says BMI under 35, while the companion billing article accepts diagnosis codes up through BMI 39.9. That is a local LCD-versus-article mismatch.</p>
+        </article>
       </div>
 
-      ${divergenceGroups.length ? `
-            <div class="divergence-grid">
-              ${divergenceGroups.map((group) => `
-                    <article class="tutorial-card divergence-card">
-                      <div class="count-card-head">
-                        <h3>${escapeHtml(group.label)}</h3>
-                        <span class="count-pill">${group.items.length} modeled</span>
-                      </div>
-                      <p>${escapeHtml(group.intro)}</p>
-                      <ul class="divergence-list">
-                        ${group.items.slice(0, 3).map((item) => `
-                              <li>
-                                <strong>${escapeHtml(item.label ?? item.category)}:</strong>
-                                ${escapeHtml(item.description)}
-                              </li>
-                            `).join("")}
-                      </ul>
-                    </article>
-                  `).join("")}
+      <div class="variation-summary-callout">
+        <strong>${escapeHtml(comparison.verdictSummary ?? "Clinical-core presence is aligned, but the integrated model still captures real contractor variation.")}</strong>
+        <span>The all-checkmark grid later in this section is only a presence test. The clinical wording table below is where the actual differences in phrasing, measurement windows, and provider requirements are made explicit.</span>
+      </div>
+
+      ${clinicalVarianceRows.length ? `
+            <div class="section-head secondary">
+              <div>
+                <h3>Actual clinical wording or provider differences</h3>
+                <p class="section-copy">These rows are still part of the clinical or provider layer. They matter even though the normalized clinical-core presence grid below remains all checkmarks.</p>
+              </div>
+            </div>
+
+            <div class="matrix-wrap">
+              <table class="matrix-table">
+                <thead>
+                  <tr>
+                    <th>Clinical or provider difference</th>
+                    ${contractors.map((contractor) => `<th>${renderContractorHeader(contractor)}</th>`).join("")}
+                    <th>Spread</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${clinicalVarianceRows.map((row) => {
+    const byContractor = new Map(row.contractorValues.map((item) => [item.contractorId, item]));
+    const values = contractors.map((contractor) => byContractor.get(contractor.id)?.valueSummary ?? "Not modeled");
+    const summary = summarizeValues(values);
+    return `
+                        <tr>
+                          <td>
+                            <div class="variation-label">${escapeHtml(row.label)}</div>
+                            <div class="variation-note">${escapeHtml(varianceDimensions.get(row.dimensionId) ?? row.dimensionId)}. ${escapeHtml(row.takeaway)}</div>
+                          </td>
+                          ${contractors.map((contractor) => {
+      const value = byContractor.get(contractor.id);
+      return `
+                                <td class="variance-value-cell ${value?.relation === "differs" ? "is-different" : ""}">
+                                  <div class="variance-value-main">${escapeHtml(value?.valueSummary ?? "Not modeled")}</div>
+                                </td>
+                              `;
+    }).join("")}
+                          <td class="distribution-cell">
+                            ${summary.map(([label, count]) => `
+                                  <div class="distribution-row">
+                                    <span>${escapeHtml(label)}</span>
+                                    <strong>${count}</strong>
+                                  </div>
+                                `).join("")}
+                          </td>
+                        </tr>
+                      `;
+  }).join("")}
+                </tbody>
+              </table>
             </div>
           ` : ""}
+
+      <div class="section-head secondary">
+        <div>
+          <h3>Presence of normalized clinical-core criteria</h3>
+          <p class="section-copy">A checkmark here means only that the criterion appears somewhere in that LCD. It does not claim the exact wording, measurement window, or provider definition is identical.</p>
+        </div>
+      </div>
 
       <div class="matrix-wrap">
         <table class="matrix-table">
           <thead>
             <tr>
               <th>Clinical-core criterion</th>
-              ${contractors.map((contractor) => `
-                    <th>
-                      <div class="table-col-stack">
-                        <div class="table-col-head">${escapeHtml(contractor.name)}</div>
-                        <div class="table-col-subtle">${docChip(model, contractor.lcd, contractor.lcd, "lcd", contractor.region)}</div>
-                      </div>
-                    </th>
-                  `).join("")}
+              ${contractors.map((contractor) => `<th>${renderContractorHeader(contractor)}</th>`).join("")}
               <th>Spread</th>
             </tr>
           </thead>
@@ -1574,53 +1078,63 @@ function renderMacVariation(model) {
       </div>
 
       ${realDifferences.length ? `
+            <div class="section-head secondary">
+              <div>
+                <h3>Material differences captured from the documents</h3>
+                <p class="section-copy">This ledger spells out the narrative differences the model extracted, including whether they live in clinical wording, billing articles, or governance history.</p>
+              </div>
+            </div>
+
             <div class="matrix-wrap difference-ledger">
               <table class="matrix-table">
                 <thead>
                   <tr>
                     <th>Material difference captured</th>
-                    <th>Severity</th>
-                    <th>Affected MACs</th>
-                    <th>What differs</th>
+                    <th>Impact</th>
+                    <th>Affected contractor jurisdictions</th>
+                    <th>What the model says</th>
                   </tr>
                 </thead>
                 <tbody>
-                  ${realDifferences.map((difference) => `
+                  ${realDifferences.map((difference) => {
+    const described = describeMaterialDifference(difference);
+    return `
                         <tr>
                           <td>
-                            <div class="variation-label">${escapeHtml(difference.label ?? difference.category)}</div>
+                            <div class="variation-label">${escapeHtml(described.label)}</div>
                             ${difference.kind ? `<div class="variation-note">${escapeHtml(differenceGroupLabels.get(difference.kind) ?? difference.kind)}</div>` : ""}
                           </td>
                           <td><span class="value-pill is-${difference.severity === "high" ? "rose" : difference.severity === "medium" ? "amber" : "muted"}">${escapeHtml(difference.severity)}</span></td>
                           <td>
                             <div class="difference-mac-list">
-                              ${difference.affectedMacs.map((item) => `<span class="mini-doc-chip is-neutral">${escapeHtml(item)}</span>`).join("")}
+                              ${difference.affectedMacs.map((item) => `<span class="mini-doc-chip is-neutral">${escapeHtml(friendlyAffectedMacName(item))}</span>`).join("")}
                             </div>
                           </td>
                           <td>
-                            <div class="variation-label">${escapeHtml(difference.description)}</div>
-                            <div class="variation-note">${escapeHtml(difference.detail)}</div>
+                            <div class="variation-label">${escapeHtml(described.description)}</div>
+                            <div class="variation-note">${escapeHtml(described.detail)}</div>
                           </td>
                         </tr>
-                      `).join("")}
+                      `;
+  }).join("")}
                 </tbody>
               </table>
             </div>
           ` : ""}
 
+      <div class="section-head secondary">
+        <div>
+          <h3>Billing and article variation by contractor jurisdiction</h3>
+          <p class="section-copy">This is the claim-execution layer. If a row differs here, the divergence usually lives in the companion billing article rather than in the main LCD eligibility text.</p>
+        </div>
+      </div>
+
       <div class="matrix-wrap variation-matrix">
         <table class="matrix-table">
           <thead>
             <tr>
-              <th>Operational / coding variation</th>
-              ${contractors.map((contractor) => `
-                    <th>
-                      <div class="table-col-stack">
-                        <div class="table-col-head">${escapeHtml(contractor.name)}</div>
-                        <div class="table-col-subtle">${docChip(model, contractor.lcd, contractor.lcd, "lcd", contractor.region)}</div>
-                      </div>
-                    </th>
-                  `).join("")}
+              <th>Billing or article variation</th>
+              ${contractors.map((contractor) => `<th>${renderContractorHeader(contractor)}</th>`).join("")}
               <th>Distribution</th>
             </tr>
           </thead>
@@ -1663,7 +1177,7 @@ function renderCodeAtlas(model) {
         <div>
           <div class="eyebrow">Structured Coding</div>
           <h2>Code Atlas</h2>
-          <p class="section-copy">The selected family now gets a true structured code view instead of a vague coding note. This is the strongest bridge between coverage criteria and claim execution.</p>
+          <p class="section-copy">The selected family now gets a true structured code view instead of a vague coding note. This is the strongest bridge between coverage criteria and claim execution. If you do not work in claims, a modifier is simply the short billing suffix that changes how a procedure code is interpreted on the claim.</p>
         </div>
       </div>
 
@@ -1781,48 +1295,92 @@ function renderCodeAtlas(model) {
     </section>
   `;
 }
-function renderSourceLedger(model) {
+function renderStructuredModelBrowser(model) {
+  const rules = ruleMetamodel(model);
+  const family = currentFamily(model);
+  const treatment = currentTreatmentModel(model);
+  const layering = currentLayeringModel(model);
+  const summary = familyDeltaMap(model).get(state.selectedFamilyId);
+  const profileIds = new Set([
+    ...summary?.baselineDocumentIds ?? [],
+    ...summary?.localDocumentIds ?? []
+  ]);
+  const selectedProfiles = list(rules?.documentProfiles).filter((profile) => profile.familyId === state.selectedFamilyId || profileIds.has(profile.documentId));
+  const tabs = [
+    {
+      id: "overview",
+      label: "Root model",
+      description: "The top-level JSON organizes the tutorial into source documents, policy families, treatment models, comparisons, and rule abstractions.",
+      payload: {
+        meta: model.meta,
+        sourceCounts: {
+          total: model.sourceDocuments.length,
+          ncds: model.sourceDocuments.filter((source) => source.type === "NCD").length,
+          lcds: model.sourceDocuments.filter((source) => source.type === "LCD").length,
+          articles: model.sourceDocuments.filter((source) => source.type === "Article").length
+        },
+        policyFamilies: model.policyFamilies.map((item) => ({
+          id: item.id,
+          label: item.label,
+          stage: item.stage,
+          tone: item.tone
+        }))
+      }
+    },
+    {
+      id: "selected-path",
+      label: "Selected path",
+      description: "A treatment path combines a human-friendly summary, typed eligibility fields, layered baseline-vs-local logic, and linked source records.",
+      payload: {
+        selectedFamily: family,
+        treatmentModel: treatment,
+        layeringModel: layering
+      }
+    },
+    {
+      id: "document-packs",
+      label: "Document packs",
+      description: "Each NCD, LCD, or companion billing article is decomposed into structured statements tied to canonical requirements.",
+      payload: selectedProfiles
+    },
+    {
+      id: "cross-mac",
+      label: "Cross-MAC variance",
+      description: "The cross-MAC slice separates normalized clinical-core presence from contractor-specific wording, billing, and lifecycle differences.",
+      payload: {
+        criteriaMatrix: model.crossMacComparison?.criteriaMatrix,
+        realDifferences: model.crossMacComparison?.realDifferences,
+        contractorVariance: rules?.contractorVariance
+      }
+    }
+  ];
+  const activeTab = tabs.find((tab) => tab.id === state.selectedModelTab) ?? tabs[0];
   return `
     <section class="panel">
       <div class="section-head">
         <div>
-          <div class="eyebrow">Traceability</div>
-          <h2>Source Ledger</h2>
-          <p class="section-copy">Every abstraction in this codex prototype is tied back to the underlying CMS records used in the manual review.</p>
+          <div class="eyebrow">Structured Output</div>
+          <h2>What The Underlying JSON Actually Looks Like</h2>
+          <p class="section-copy">The visuals above are just one rendering of the curated structure. This browser shows the actual JSON slices that drive the tutorial, so you can see how a machine-readable model makes the comparisons straightforward.</p>
         </div>
       </div>
 
-      <div class="ledger-wrap">
-        <table class="ledger-table">
-          <thead>
-            <tr>
-              <th>Document</th>
-              <th>Family</th>
-              <th>Scope</th>
-              <th>Effective</th>
-              <th>Why it matters</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${model.sourceDocuments.map((source) => {
-    const family = familyMap(model).get(source.familyId);
-    return `
-                  <tr>
-                    <td>
-                      <a href="${escapeHtml(source.url)}" target="_blank" rel="noreferrer">${escapeHtml(source.displayId)}</a>
-                      <div class="ledger-title">${escapeHtml(source.title)}</div>
-                      ${source.contractor ? `<div class="ledger-subtle">${escapeHtml(source.contractor)}</div>` : ""}
-                    </td>
-                    <td>${escapeHtml(family?.label ?? source.familyId)}</td>
-                    <td>${escapeHtml(source.scope)}</td>
-                    <td>${escapeHtml(formatDate(source.effectiveDate))}</td>
-                    <td>${escapeHtml(source.reviewUse)}</td>
-                  </tr>
-                `;
-  }).join("")}
-          </tbody>
-        </table>
+      <div class="json-browser-tabs">
+        ${tabs.map((tab) => `
+              <button class="json-tab ${tab.id === activeTab.id ? "is-active" : ""}" data-model-tab="${tab.id}" aria-pressed="${tab.id === activeTab.id ? "true" : "false"}">
+                ${escapeHtml(tab.label)}
+              </button>
+            `).join("")}
       </div>
+
+      <article class="json-browser-card">
+        <div class="json-browser-copy">
+          <div class="eyebrow">Current slice</div>
+          <h3>${escapeHtml(activeTab.label)}</h3>
+          <p>${escapeHtml(activeTab.description)}</p>
+        </div>
+        ${renderJsonPreview(activeTab.payload)}
+      </article>
     </section>
   `;
 }
@@ -1838,30 +1396,25 @@ function render(model) {
       </header>
 
       ${renderHero(model)}
-      ${renderTutorialOrientation()}
       ${renderCmsGlossary()}
       ${renderChapterIntro(1, "Public Policy Material", "What Structure Is Already Present In The Source Documents?", "Only after the orientation do we pivot to the source material itself. OSA is the lens, but the lesson is about the underlying structure already present in CMS policy documents.")}
-      ${renderMethodology(model)}
       ${renderSourceLandscape(model)}
-      ${renderRuleSemantics(model)}
 
       ${renderChapterIntro(2, "National Baseline", "The NCDs Already Encode A Policy Grammar", "The OSA NCDs are not just prose. Once extracted, they define valid diagnostic modalities, severity thresholds, mild-disease exceptions, and the first-line CPAP pathway.")}
       ${renderNcdTutorial(model)}
-      ${renderEligibilityLandscape(model)}
 
       ${renderChapterIntro(3, "Local Interaction", "How LCDs Constrain, Operationalize, Or Replace The NCD", "Next the tutorial pivots from the national floor to local therapy branches. This is where the same OSA domain becomes different policy depending on device, procedure, and contractor context.")}
       ${renderFamilyRail(model)}
       ${renderFamilyFocus(model)}
-      ${renderFamilyLineage(model)}
-      ${renderSelectedFamilyRuleLedger(model)}
 
-      ${renderChapterIntro(4, "Consistency Vs Conflict", "Where Local Policies Align And Where They Really Diverge", "The HGNS family is the best OSA stress test. On the surface the LCDs look nearly identical. Once structured, the real differences become explicit in wording, provider rules, lifecycle status, and billing articles.")}
-      ${renderCodeAtlas(model)}
+      ${renderChapterIntro(4, "Consistency Vs Conflict", "Where Local Policies Align And Where They Really Diverge", "Hypoglossal nerve stimulation (HGNS) is the best OSA stress test. On the surface the LCDs look nearly identical. Once structured, the real differences become explicit in wording, provider rules, lifecycle status, and billing articles.")}
       ${renderMacVariation(model)}
 
-      ${renderChapterIntro(5, "Automation Layer", "What AI Agents Can Structure Today", "Finally, the tutorial exposes the canonical requirement dictionary and the source ledger. These are the data products that make policy comparison, visualization, and later decision-support use straightforward.")}
-      ${renderRequirementDictionary(model)}
-      ${renderSourceLedger(model)}
+      ${renderChapterIntro(5, "Why It Matters", "Why Articles And Structure Matter", "The last step is to show why the article layer matters at all: it is where the clinical policy turns into code ranges, modifiers, and adjudication logic that can diverge across contractors even when the LCD text looks aligned.")}
+      ${renderCodeAtlas(model)}
+      ${renderInsights(model)}
+      ${renderChapterIntro(6, "Structured Output", "The Tutorial Is Backed By Explicit JSON, Not Hidden Glue Code", "The last view drops below the polished cards and tables and shows the structured slices directly. This is the machine-readable layer that lets an agent compare NCDs, LCDs, and articles without starting over from raw prose each time.")}
+      ${renderStructuredModelBrowser(model)}
 
       <footer class="codex-footer">
         <div>${escapeHtml(model.meta.reviewMethod)}</div>
@@ -1886,6 +1439,16 @@ function render(model) {
     }
     state.selectedFamilyId = familyId;
     render(state.model);
+  });
+  document.querySelectorAll("[data-model-tab]").forEach((element) => {
+    element.addEventListener("click", () => {
+      const tabId = element.dataset.modelTab;
+      if (!tabId || !state.model || tabId === state.selectedModelTab) {
+        return;
+      }
+      state.selectedModelTab = tabId;
+      render(state.model);
+    });
   });
 }
 async function bootstrap() {
