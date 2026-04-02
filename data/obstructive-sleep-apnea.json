@@ -5,7 +5,63 @@
     "subtitle": "Hand-curated CMS coverage metamodel spanning national diagnostic rules, local therapy coverage, and HGNS coding logic.",
     "reviewedOn": "2026-03-31",
     "reviewMethod": "Manual review of current CMS NCD, LCD, and Article records for OSA and hypoglossal nerve stimulation, normalized into evidence variables, policy families, contractor variants, and coding bundles.",
-    "focus": "Show how a richer abstraction supports pathway, matrix, and contractor-comparison views that are much more useful than raw document bullets."
+    "focus": "Show how a richer abstraction supports pathway, matrix, and contractor-comparison views that are much more useful than raw document bullets.",
+    "cmsVocabulary": [
+      {
+        "term": "NCD",
+        "label": "National Coverage Determination",
+        "role": "National coverage floor",
+        "band": "Foundation",
+        "tone": "ncd",
+        "detail": "A National Coverage Determination is the Medicare-wide baseline. For OSA, the NCDs define the covered sleep-test pathways and the first-line CPAP framework."
+      },
+      {
+        "term": "LCD",
+        "label": "Local Coverage Determination",
+        "role": "Local contractor coverage rule",
+        "band": "Local overlay",
+        "tone": "lcd",
+        "detail": "A Local Coverage Determination is written by a Medicare Administrative Contractor (MAC) for one or more contractor jurisdictions rather than one state. LCDs can reuse the NCD, narrow it, operationalize it, or create a therapy-specific treatment path."
+      },
+      {
+        "term": "Article",
+        "label": "CMS Billing/Coding Article",
+        "role": "Companion billing and coding record",
+        "band": "Execution layer",
+        "tone": "article",
+        "detail": "In the Medicare Coverage Database, an Article is CMS's own record type for companion billing and coding instructions. It is not a journal article. This layer translates coverage into ICD-10, HCPCS/CPT, modifiers, and documentation instructions."
+      },
+      {
+        "term": "Response record",
+        "label": "Response to Comments",
+        "role": "Revision and governance context",
+        "band": "Change history",
+        "tone": "response",
+        "detail": "Response-to-comments documents explain why a policy changed, which objections were answered, and whether a treatment path is current, retired, or consolidated into another LCD."
+      }
+    ],
+    "macDefinition": "Medicare Administrative Contractor. The regional payer entity that writes LCDs and associated CMS Articles for its jurisdictions. CMS organizes these as geographic jurisdictions rather than state-by-state policies; the current CMS MAC pages describe 12 Part A/B MAC jurisdictions and 4 DME MAC jurisdictions.",
+    "institutionalContext": {
+      "totalNCDs": 344,
+      "totalLCDs": 961,
+      "totalArticles": 2157,
+      "contractorOrganizations": 7,
+      "interoperabilityNote": "CMS's 2024 interoperability rule (CMS-0057-F) mandates electronic prior authorization APIs by 2027. The HL7 Da Vinci Implementation Guides (CRD, DTR, PAS) create the transport layer, but there is no standard format for a computable LCD. Each payer must independently interpret prose policy."
+    },
+    "jurisdictionLabels": {
+      "J5": "Jurisdiction 5",
+      "J6": "Jurisdiction 6",
+      "J8": "Jurisdiction 8",
+      "J15": "Jurisdiction 15",
+      "JE": "Jurisdiction E",
+      "JF": "Jurisdiction F",
+      "JH": "Jurisdiction H",
+      "JJ": "Jurisdiction J",
+      "JK": "Jurisdiction K",
+      "JL": "Jurisdiction L",
+      "JM": "Jurisdiction M",
+      "JN": "Jurisdiction N"
+    }
   },
   "sourceDocuments": [
     {
@@ -331,6 +387,28 @@
       "effectiveDate": "2020-05-07",
       "reviewUse": "Palmetto response-to-comments record for HGNS rollout context.",
       "url": "https://www.cms.gov/medicare-coverage-database/view/article.aspx?articleid=58070&ver=2"
+    }
+  ],
+  "sourceDocumentExamples": [
+    {
+      "sourceId": "ncd-sleep-testing",
+      "snippet": "Type I PSG, Type II, Type III, Type IV, and PAT-based multi-channel pathways can all qualify when the technical criteria are met.",
+      "meaning": "A baseline evidence rule defining which kinds of sleep studies Medicare accepts to establish the OSA diagnosis."
+    },
+    {
+      "sourceId": "lcd-pap-dme",
+      "snippet": "Objective adherence is defined as at least 4 hours per night on at least 70% of nights in a consecutive 30-day period, with follow-up between days 31 and 91.",
+      "meaning": "A local workflow rule. The national CPAP policy creates the treatment concept, and the LCD turns it into an auditable continuation rule with specific adherence thresholds."
+    },
+    {
+      "sourceId": "article-hgns-noridian",
+      "snippet": "Claims for hypoglossal nerve stimulation (HGNS) anchor on G47.33 and use companion BMI diagnosis-code lanes that can extend beyond the clinical BMI ceiling stated in the LCD text.",
+      "meaning": "A claim-execution rule. Billing article claim logic can diverge from the clinical LCD wording, as shown here with BMI code ranges."
+    },
+    {
+      "sourceId": "article-hgns-palmetto-response",
+      "snippet": "Stakeholder feedback and the contractor's rationale for the final wording are preserved as part of the rollout history.",
+      "meaning": "A governance record preserving stakeholder feedback and the contractor's rationale. It explains why a policy looks the way it does and whether a variant is current or historical."
     }
   ],
   "policyFamilies": [
@@ -2282,7 +2360,9 @@
       "apnea": "Cessation of airflow for at least 10 seconds",
       "hypopnea": "Abnormal respiratory event lasting ≥10 seconds with ≥30% reduction in airflow and ≥4% oxygen desaturation",
       "ahi": "Average number of apnea + hypopnea episodes per hour of sleep",
-      "rdi": "Average number of respiratory disturbances per hour of recording time"
+      "rdi": "Average number of respiratory disturbances per hour of recording time",
+      "bmi": "Body mass index, a standard measure of body weight relative to height (kg/m²). Some treatments set an upper BMI limit for coverage.",
+      "psg": "Polysomnography, the formal overnight sleep study conducted in a lab setting. The gold-standard diagnostic test for obstructive sleep apnea."
     },
     "severityScale": [
       {
@@ -2351,6 +2431,7 @@
       "category": "Diagnostic",
       "label": "Sleep Testing for OSA",
       "shortLabel": "Sleep Testing",
+      "description": "Sleep studies that establish the OSA diagnosis and AHI/RDI baseline. Multiple modalities qualify, from full attended polysomnography to portable home monitors.",
       "ncd": {
         "id": 330,
         "version": 1,
@@ -2408,6 +2489,7 @@
       "category": "First-Line Therapy",
       "label": "CPAP / PAP Devices",
       "shortLabel": "CPAP / PAP",
+      "description": "A mask worn during sleep that keeps the airway open with continuous air pressure. First-line treatment for OSA under Medicare.",
       "ncd": {
         "id": 226,
         "version": 3,
@@ -2501,6 +2583,18 @@
       },
       "notCovered": [
         "E0471 bi-level with backup rate for OSA diagnosis"
+      ],
+      "ahiRangeBars": [
+        {
+          "min": 5,
+          "max": 14,
+          "label": "Mild + comorbidities"
+        },
+        {
+          "min": 15,
+          "max": 80,
+          "label": "Moderate-severe"
+        }
       ]
     },
     {
@@ -2508,6 +2602,7 @@
       "category": "Second-Line Therapy",
       "label": "Hypoglossal Nerve Stimulation (HGNS)",
       "shortLabel": "HGNS / Inspire",
+      "description": "An implanted nerve stimulator for the tongue muscle (hypoglossal nerve), used in patients who fail CPAP. There is no national NCD — coverage is set entirely by regional contractor LCDs. Eight contractors published HGNS LCDs in a coordinated rollout in 2020.",
       "ncd": null,
       "eligibility": {
         "ageMin": 22,
@@ -2753,6 +2848,13 @@
           "type": "response-to-comments",
           "effectiveDate": "2020-01-30"
         }
+      ],
+      "ahiRangeBars": [
+        {
+          "min": 15,
+          "max": 65,
+          "label": "AHI 15-65 only"
+        }
       ]
     },
     {
@@ -2760,6 +2862,7 @@
       "category": "Second-Line Therapy",
       "label": "Oral Appliances (Mandibular Advancement)",
       "shortLabel": "Oral Appliance",
+      "description": "A custom-fabricated dental device that advances the lower jaw to prevent airway collapse. An alternative for patients with mild-to-moderate OSA or who cannot tolerate CPAP.",
       "ncd": null,
       "lcds": [
         {
@@ -2846,6 +2949,23 @@
           "covered": false,
           "notes": "Non-covered — insufficient evidence"
         }
+      ],
+      "ahiRangeBars": [
+        {
+          "min": 5,
+          "max": 14,
+          "label": "Mild + comorbidities"
+        },
+        {
+          "min": 15,
+          "max": 30,
+          "label": "Moderate"
+        },
+        {
+          "min": 30,
+          "max": 80,
+          "label": "Severe + PAP failure"
+        }
       ]
     },
     {
@@ -2853,6 +2973,7 @@
       "category": "Second-Line Therapy",
       "label": "Surgical Treatment of OSA",
       "shortLabel": "Surgery",
+      "description": "Procedures that reshape the airway to reduce obstruction, including uvulopalatopharyngoplasty (UPPP), jaw advancement, and tracheostomy. Requires documented CPAP failure and evidence of specific obstruction sites.",
       "ncd": null,
       "lcds": [
         {
@@ -2986,6 +3107,13 @@
           "indication": null,
           "notes": "Investigational/experimental",
           "covered": false
+        }
+      ],
+      "ahiRangeBars": [
+        {
+          "min": 15,
+          "max": 80,
+          "label": "RDI >= 15"
         }
       ]
     }
@@ -3975,6 +4103,48 @@
         "label": "Governance layer",
         "meaning": "The record governs lifecycle, revision rationale, topology, or response-to-comments context rather than a bedside criterion alone.",
         "tone": "ink"
+      }
+    ],
+    "polarityLegend": [
+      {
+        "id": "requires",
+        "meaning": "Requires this condition."
+      },
+      {
+        "id": "allows",
+        "meaning": "Allows this path or evidence."
+      },
+      {
+        "id": "denies",
+        "meaning": "Excludes or denies this scenario."
+      },
+      {
+        "id": "codes",
+        "meaning": "Defines billing or coding handling."
+      },
+      {
+        "id": "documents",
+        "meaning": "Specifies what must be documented."
+      },
+      {
+        "id": "references",
+        "meaning": "Points to a linked policy or source."
+      },
+      {
+        "id": "structures",
+        "meaning": "Defines the document structure or packaging."
+      },
+      {
+        "id": "status",
+        "meaning": "States lifecycle status."
+      },
+      {
+        "id": "summarizes",
+        "meaning": "Summarizes the document's role."
+      },
+      {
+        "id": "responds",
+        "meaning": "Captures response-to-comments context."
       }
     ],
     "requirementGroups": [
